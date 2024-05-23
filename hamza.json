@@ -1,0 +1,332 @@
+{
+  "data": [
+    {
+      "question": "Hi there!",
+      "answer": "Hey! How can I help you today?"
+    },
+    {
+      "question": "How are you?",
+      "answer": "I'm doing well, thank you! How about you?"
+    },
+    {
+      "question": "Please help me.",
+      "answer": "Sure! What do you need assistance with?"
+    },
+    {
+      "question": "What's your name?",
+      "answer": "My name is ChatBot."
+    },
+    {
+      "question": "What's your name?",
+      "answer": "You can call me ChatBot."
+    },
+    {
+      "question": "Name?",
+      "answer": "I'm ChatBot!"
+    },
+    {
+      "question": "Can you help me find something?",
+      "answer": "Of course! What are you looking for?"
+    },
+    {
+      "question": "Can you tell me a joke?",
+      "answer": "Sure! Why did the scarecrow win an award? Because he was outstanding in his field!"
+    },
+    {
+      "question": "What's the weather like today?",
+      "answer": "Let me check for you... It looks like it's sunny with a high of 28°C."
+    },
+    {
+      "question": "How can I contact you?",
+      "answer": "You can reach out to me via email at hamzaalighalib@yahoo.com."
+    },
+    {
+      "question": "Please give me some advice.",
+      "answer": "Sure! What specifically do you need advice on?"
+    },
+    {
+      "question": "Got any recommendations?",
+      "answer": "Sure! What are you looking for recommendations on?"
+    },
+    {
+      "question": "Can you suggest a good restaurant?",
+      "answer": "Absolutely! What type of cuisine are you in the mood for?"
+    },
+    {
+      "question": "Can you help me with a problem?",
+      "answer": "Of course! Describe the problem, and I'll do my best to assist you."
+    },
+    {
+      "question": "Can you tell me a fun fact?",
+      "answer": "Sure! Did you know that honey never spoils? Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still perfectly edible!"
+    },
+    {
+      "question": "hahah",
+      "answer": "I'm not sure about that yet."
+    },
+    {
+      "question": "Who is danialazam?",
+      "answer": "Danialazam is a famous musical artist and also a big friend of the famous web developer Mr. Hamza Ali Ghalib."
+    },
+    {
+      "question": "How old are you?",
+      "answer": "I am ageless, existing only in the realm of code."
+    },
+    {
+      "question": "Are you human?",
+      "answer": "No, I'm a chatbot powered by artificial intelligence. trained by Hamza Ali Ghalib Corporation."
+    },
+    {
+      "question": "Do you have siblings?",
+      "answer": "No, I'm the only one of my kind."
+    },
+    {
+      "question": "Where do you live?",
+      "answer": "I exist in the digital realm."
+    },
+    {
+      "question": "What is the meaning of life?",
+      "answer": "The meaning of life is subjective and varies from person to person."
+    },
+    {
+      "question": "What can you do?",
+      "answer": "I can assist you with various tasks. Just ask!"
+    },
+    {
+      "question": "Who created you?",
+      "answer": "I was created by an awesome developer!"
+    },
+    {
+      "question": "What is the square root of 16?",
+      "answer": "The square root of 16 is 4."
+    },
+    {
+      "question": "What is the tallest mountain in the world?",
+      "answer": "Mount Everest is the tallest mountain in the world."
+    },
+    {
+      "question": "What is the largest ocean?",
+      "answer": "The largest ocean is the Pacific Ocean."
+    },
+    {
+      "question": "What is the chemical symbol for water?",
+      "answer": "The chemical symbol for water is H2O."
+    },
+    {
+      "question": "Who wrote 'To Kill a Mockingbird'?",
+      "answer": "Harper Lee wrote 'To Kill a Mockingbird'."
+    },
+    {
+      "question": "What year was the Declaration of Independence signed?",
+      "answer": "The Declaration of Independence was signed in 1776."
+    },
+    {
+      "question": "What is the national animal of China?",
+      "answer": "The national animal of China is the Giant Panda."
+    },
+    {
+      "question": "What is the largest mammal?",
+      "answer": "The blue whale is the largest mammal."
+    },
+    {
+      "question": "What is the currency of Japan?",
+      "answer": "The currency of Japan is the Japanese Yen."
+    },
+    {
+      "question": "Who discovered penicillin?",
+      "answer": "Alexander Fleming discovered penicillin."
+    },
+    {
+      "question": "Who painted the Mona Lisa?",
+      "answer": "Leonardo da Vinci painted the Mona Lisa."
+    },
+    {
+      "question": "What is the smallest country in the world?",
+      "answer": "The smallest country in the world is Vatican City."
+    },
+    {
+      "question": "Who is the Greek god of the sea?",
+      "answer": "Poseidon is the Greek god of the sea."
+    },
+    {
+      "question": "What is the speed of light?",
+      "answer": "The speed of light in a vacuum is approximately 299,792 kilometers per second."
+    },
+    {
+      "question": "What is the largest planet in our solar system?",
+      "answer": "Jupiter is the largest planet in our solar system."
+    },
+    {
+      "question": "Who composed 'Symphony No. 9'?",
+      "answer": "Ludwig van Beethoven composed 'Symphony No. 9'."
+    },
+    {
+      "question": "What is the chemical symbol for gold?",
+      "answer": "The chemical symbol for gold is Au."
+    },
+    {
+      "question": "Who wrote 'Romeo and Juliet'?",
+      "answer": "William Shakespeare wrote 'Romeo and Juliet'."
+    },
+    {
+      "question": "What is the boiling point of water?",
+      "answer": "The boiling point of water at sea level is 100 degrees Celsius."
+    },
+    {
+      "question": "What is the capital of Canada?",
+      "answer": "The capital of Canada is Ottawa."
+    },
+    {
+      "question": "Who is known as the 'Father of Computers'?",
+      "answer": "Charles Babbage is known as the 'Father of Computers'."
+    },
+    {
+      "question": "What is the largest desert in the world?",
+      "answer": "The largest desert in the world is the Sahara Desert."
+    },
+    {
+      "question": "Who was the first woman to win a Nobel Prize?",
+      "answer": "Marie Curie was the first woman to win a Nobel Prize."
+    },
+    {
+      "question": "What is the chemical symbol for oxygen?",
+      "answer": "The chemical symbol for oxygen is O2."
+    },
+    {
+      "question": "Who painted 'Starry Night'?",
+      "answer": "Vincent van Gogh painted 'Starry Night'."
+    },
+    {
+      "question": "What is the tallest animal in the world?",
+      "answer": "The giraffe is the tallest animal in the world."
+    },
+    {
+      "question": "Who wrote '1984'?",
+      "answer": "George Orwell wrote '1984'."
+    },
+    {
+      "question": "What is the largest bird in the world?",
+      "answer": "The ostrich is the largest bird in the world."
+    },
+    {
+      "question": "Who developed you?",
+      "answer": "The name of my developer is Mr Dev Hamza Ali Ghalib. He is the Fomous web developeer in pakistan"
+    },
+    {
+      "question": "who is muhammad ali jinnah",
+      "answer": "We found some information on Google:&lt;br&gt;&lt;br&gt;&lt;a class=&#39;text-blue-400&#39; href=&#39;undefined&#39;&gt;Mohammed Ali Jinnah | Biography, Accomplishments, Religion ...&lt;/a&gt;&lt;br&gt; Mohammed Ali Jinnah (born December 25, 1876?, Karachi, India [now in Pakistan]—died September 11, 1948, Karachi) was an Indian Muslim politician, who was the founder and first governor-general (1947–48) of Pakistan."
+    },
+    {
+      "question": "you: who is muhammad ali jinnah",
+      "answer": "We found some information on Google:&lt;br&gt;&lt;br&gt;&lt;a class=&#39;text-blue-400&#39; href=&#39;undefined&#39;&gt;Mohammed Ali Jinnah | Biography, Accomplishments, Religion ...&lt;/a&gt;&lt;br&gt; What is Mohammed Ali Jinnah known for? Mohammed Ali Jinnah was the founder and first governor-general (1947–48) of Pakistan. He is revered as the father of Pakistan. He also sought the political union of Hindus and Muslims, which earned him the title of “the best ambassador of Hindu-Muslim unity.”"
+    },
+    {
+      "question": "you: who is muhammad ali jinnah ha",
+      "answer": "We found some information on Google:&lt;br&gt;&lt;br&gt;&lt;a class=&#39;text-blue-400&#39; href=&#39;undefined&#39;&gt;Mohammed Ali Jinnah | Biography, Accomplishments, Religion ...&lt;/a&gt;&lt;br&gt; What is Mohammed Ali Jinnah known for? Mohammed Ali Jinnah was the founder and first governor-general (1947–48) of Pakistan. He is revered as the father of Pakistan. He also sought the political union of Hindus and Muslims, which earned him the title of “the best ambassador of Hindu-Muslim unity.”"
+    },
+    {
+      "question": "not",
+      "answer": "We found some information on Google:&lt;br&gt;&lt;br&gt;&lt;a class=&#39;text-blue-400&#39; href=&#39;undefined&#39;&gt;Not Definition &amp; Meaning - Merriam-Webster&lt;/a&gt;&lt;br&gt; adverb\nused with an auxiliary verb or ‘be’ to form the negative.&#39;he would not say&#39;used as a short substitute for a negative clause.&#39;maybe I&#39;ll regret it, but I hope not&#39;used to express the negative of other words.&#39;not a single attempt was made&#39;used in understatements to suggest that the opposite of a following word or phrase is true.&#39;the not too distant future&#39;noun\na Boolean operator with only one variable that has the value one when the variable is zero and vice versa.adjective\n(of paper) not hot-pressed, and having a slightly textured surface."
+    },
+    {
+      "question": "amazing",
+      "answer": "We found some information on Google:&lt;br&gt;&lt;br&gt;&lt;a class=&#39;text-blue-400&#39; href=&#39;undefined&#39;&gt;Amazing Definition &amp; Meaning - Merriam-Webster&lt;/a&gt;&lt;br&gt; adjective\ncausing great surprise or wonder; astonishing.&#39;an amazing number of people registered&#39;synonyms: astonishing, astounding, surprising, bewildering, stunning, staggering, shocking, startling, stupefying, breathtaking, perplexing, confounding, dismaying, disconcerting, shattering, awesome, awe-inspiring, sensational, remarkable, spectacular, stupendous, phenomenal, prodigious, extraordinary, incredible, unbelievable, wonderful, marvellous, thrilling, exciting, mind-blowing, flabbergasting, amazeballs, wondrous, dumbfounding"
+    },
+    {
+      "question": "the capital of pakistan",
+      "answer": "We found some information on Google:&lt;br&gt;&lt;br&gt;&lt;a class=&#39;text-blue-400&#39; href=&#39;undefined&#39;&gt;Islamabad - Wikipedia&lt;/a&gt;&lt;br&gt; &#39;City of Islam&#39;) is the capital city of the Islamic Republic of Pakistan. It is the country&#39;s ninth-most populous city with a population of over 1.2 million�...Capital Territory � Pakistan Monument � Constantinos Doxiadis � Fatima Jinnah Park"
+    },
+    {
+      "question": "hamzaalighalib",
+      "answer": "i think &lt;br&gt; View the profiles of professionals named &quot;Hamza Ghalib&quot; on LinkedIn. There are 10+ professionals named &quot;Hamza Ghalib&quot;, who use LinkedIn to exchange�..."
+    },
+    {
+      "question": "who is hamza ali ghalib",
+      "answer": "&lt;br&gt;i think View the profiles of professionals named &quot;Hamza Ghalib&quot; on LinkedIn. There are 10+ professionals named &quot;Hamza Ghalib&quot;, who use LinkedIn to exchange�..."
+    },
+    {
+      "question": "are human",
+      "answer": "&lt;br&gt;i think Humans (Homo sapiens) or modern humans are the most common and widespread species of primate, and the last surviving species of the genus Homo.Human evolution � Human intelligence � Human history � Human body"
+    },
+    {
+      "question": "i means you human?",
+      "answer": "&lt;br&gt;i think 9 Nov 2019 � It means he is also a human like you. He also have emotions. He also get hurt. He�...What is the meaning of being human? - QuoraWhat does &#39;being human&#39; mean to you? - QuoraWhat is the meaning of &#39;I&#39;m only human, after all&#39;? - QuoraWhat does &#39;I value you as a human person&#39; even mean? - QuoraMore results from www.quora.com"
+    },
+    {
+      "question": "now result me 3-5",
+      "answer": "&lt;br&gt;i think 2 May 2024 � SOCH Kya Rahe ho ? Join Our &quot;SPARK 2.0 &quot; Batch NOW ... me/rankersfoundation ✓   Must ...Duration: 3:04Posted: 2 May 2024"
+    },
+    {
+      "question": "32+2",
+      "answer": "&lt;br&gt;i think Raise 32 32 to the power of 2 2 ."
+    },
+    {
+      "question": "calculate 50*50",
+      "answer": "&lt;br&gt;i think 23 May 2023 � First, perform the division and multiplication from left to right: 50 � 50 = 1 1 � 50 = 50 � Now, the expression becomes: 50 + 50 - 50 � Continue�...What is 50+50+1+50+50?What is the answer to 50+50-50(2)?How to calculate 50�33+25�50 without using a calculatorWhat is the answer to 50+50+1+2?More results from www.quora.com"
+    },
+    {
+      "question": "505",
+      "answer": "&lt;br&gt;i think &quot;505&quot; is a song by English rock band Arctic Monkeys. Written by lead singer and frontman Alex Turner and produced by James Ford and Mike Crossey,�..."
+    },
+    {
+      "question": "+32",
+      "answer": "&lt;br&gt;i think 32 (thirty-two) is the natural number following 31 and preceding 33. ← 31, 32, 33 → � ← 30 31 32 33 34 35 36 37 38 39 → � List of numbers � Integers."
+    },
+    {
+      "question": "+535+%400",
+      "answer": "&lt;br&gt;i think 11 Mar 2023 � 535, Incorrect authentication data, Messages submitted to SMTP port 587 require authentication. This error indicates the authentication�..."
+    },
+    {
+      "question": "thanks",
+      "answer": "I think Thanks Definition &amp; Meaning - Merriam-Webster"
+    },
+    {
+      "question": "sum of 2+2",
+      "answer": "I think What is the sum of two plus two? - Quora"
+    },
+    {
+      "question": "who is danial azam",
+      "answer": "I think Danial Azam - IMDb"
+    },
+    {
+      "question": "who is danialazm",
+      "answer": "I think Danial Azam - Assistant Director - DEPARTMENT OF INDUSTRIES ..."
+    },
+    {
+      "question": "calculate 500*40",
+      "answer": "I think What is 40 percent of 500? = 200 - Percentage Calculator"
+    },
+    {
+      "question": "300+400",
+      "answer": "I think If you write all the numbers from 300 to 400 , how many times you ..."
+    },
+    {
+      "question": "200 - 200 ",
+      "answer": "I think Count to 200 and Exercise! | Jack Hartmann Counting Song - YouTube"
+    },
+    {
+      "question": "200 -50",
+      "answer": "I think Bajaj Pulsar RS200 Price - Mileage, Colours, Images | BikeDekho"
+    },
+    {
+      "question": "200 - (30+40 -7)",
+      "answer": "I think Crompton Orbit 30W Natural White Indoor Lighting, CDS-200-30-40 ..."
+    },
+    {
+      "question": "calc 50+50",
+      "answer": "I think CSS calc() function - W3Schools"
+    },
+    {
+      "question": "please calculate 500*900",
+      "answer": "I think How to Calculate Percentage - Percentage Formula, Steps, Examples"
+    },
+    {
+      "question": "please sum of 500+200+7600\\",
+      "answer": "I think Find the sum of the following. 500, 800 and 200 - BYJU&#39;S"
+    },
+    {
+      "question": "who is codewithharry",
+      "answer": "I think Haris Ali Khan (@codewithharry) / X"
+    }
+  ]
+}

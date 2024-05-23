@@ -1,0 +1,25 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/translate": "^8.3.0",
+    "@types/node": "^18.0.6",
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "compromise": "^14.13.0",
+    "express": "^4.19.2",
+    "html-to-text": "^9.0.5",
+    "mysql": "^2.18.1",
+    "natural": "^7.0.5",
+    "nlp_compromise": "^7.0.0",
+    "pos": "^0.4.2"
+  }
+}
