@@ -24,7 +24,7 @@ app.get("/chat", async (req, res) => {
     if (containsMathExpression(userMessage)) {
         // Evaluate the expression and include the result in the response
         const calculationResult = evaluateMathExpression(userMessage);
-        response = ` Your result: ${calculationResult} - <br>`+response;
+        response = ` Your result: ${calculationResult} - <br>`;
     } 
 
 
