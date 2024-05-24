@@ -230,7 +230,8 @@ function generateRandomInterjectionResponse() {
         "wowwwww",
         "nice",
         "ofcourse",
-        "",
+        "nice",
+        "great"
     ];
     return interjections[Math.floor(Math.random() * interjections.length)];
 }
