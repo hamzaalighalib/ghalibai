@@ -249,7 +249,7 @@ function generateRandomGreetingResponse() {
 }
 
 function isGreeting(userMessage) {
-    const greetings = ["hello", "hi", "hey", "greetings", "what's up", "howdy"];
+    const greetings = ["hello", "hi", "hey", "greetings", "what's up", "howdy","whats up" , "thanks"];
     return greetings.includes(userMessage.toLowerCase());
 }
 
