@@ -203,15 +203,8 @@ function isGreeting(userMessage) {
 
 function findMatchingAnswer(userMessage) {
     for (const item of data.data) {
-        if (item.question.toLowerCase().includes(userMessage.toLowerCase())) {
-            if (Array.isArray(item.answers)) {
-                // Select a random answer if multiple answers are available
-                const randomIndex = Math.floor(Math.random() * item.answers.length);
-                return item.answers[randomIndex];
-            } else {
-                // Return the single answer
-                return item.answers;
-            }
+        if (item.question.toLowerCase().includes(userMessage)) {
+            return item.answer;
         }
     }
     return null;
