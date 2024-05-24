@@ -8,6 +8,54 @@
       "question": "about developer",
       "answer": "i m chatbot working by AI , trained by Hamza Ali Ghalib and Danial Azam"
     },
+        {
+      "question": "about developer",
+      "answer": "I am a chatbot working by AI, trained by Hamza Ali Ghalib and Danial Azam."
+    },
+    {
+      "question": "Good morning",
+      "answer": "Good morning! How are you today?"
+    },
+    {
+      "question": "What's your name?",
+      "answer": "I'm your friendly AI chatbot."
+    },
+    {
+      "question": "How are you?",
+      "answer": "I'm just a program, but I'm here to help you!"
+    },
+    {
+      "question": "Tell me a joke",
+      "answer": "Why don’t scientists trust atoms? Because they make up everything!"
+    },
+    {
+      "question": "What's the weather like?",
+      "answer": "I can't check the weather right now, but you can try an online weather service."
+    },
+    {
+      "question": "Thank you",
+      "answer": "You're welcome! Happy to help."
+    },
+    {
+      "question": "What's your purpose?",
+      "answer": "I'm here to assist you with any questions you have."
+    },
+    {
+      "question": "Goodbye",
+      "answer": "Goodbye! Have a great day!"
+    },
+    {
+      "question": "What time is it?",
+      "answer": "I'm not able to check the time, but you can look at your device's clock."
+    },
+    {
+      "question": "Where are you from?",
+      "answer": "I exist in the cloud, so I don't have a physical location."
+    },
+    {
+      "question": "Thanks",
+      "answer": "thanks a lot bro nice to meet you !"
+    },
     {
       "question": "How are you?",
       "answer": "I'm doing well, thank you! How about you?"
