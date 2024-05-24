@@ -5,6 +5,10 @@
       "answer": "Hey! How can I help you today?"
     },
     {
+      "question": "about developer",
+      "answer": "i m chatbot working by AI , trained by Hamza Ali Ghalib and Danial Azam"
+    },
+    {
       "question": "How are you?",
       "answer": "I'm doing well, thank you! How about you?"
     },
