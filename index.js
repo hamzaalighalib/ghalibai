@@ -7,7 +7,6 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const htmlToText = require('html-to-text');
 
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 const data = require("./hamza.json");
@@ -18,17 +17,11 @@ app.get("/chat", async (req, res) => {
     const userMessage = req.query.message.toLowerCase();
     let response = generateResponse(userMessage);
 
-
-    //math...
-    // Check if the message contains a mathematical expression
+    // Math handling
     if (containsMathExpression(userMessage)) {
-        // Evaluate the expression and include the result in the response
         const calculationResult = evaluateMathExpression(userMessage);
-        response = ` Your result: ${calculationResult} - <br>`;
-    } 
-
-
-    
+        response = `Your result: ${calculationResult} - <br>`;
+    }
 
     if (userMessage.includes("oh") || userMessage.includes("oops")) {
         response += " " + generateRandomInterjectionResponse();
@@ -40,7 +33,7 @@ app.get("/chat", async (req, res) => {
 
     if (isInformation(userMessage)) {
         const informationSentences = extractInformation(userMessage);
-        saveInformationToJSON(userMessage,informationSentences);
+        saveInformationToJSON(userMessage, informationSentences);
         response += ` I think you may know about ${informationSentences.join(" ")}. Please provide me more information about this, so I can remember it for next time.`;
     }
 
@@ -49,82 +42,55 @@ app.get("/chat", async (req, res) => {
         response += " Thanks for assisting us.";
         try {
             const googleResult = await searchGoogle(userMessage);
-            saveInformationToJSON(userMessage,[googleResult]);
-            response += `${googleResult}. I'll remember this for next time.`;
+            saveInformationToJSON(userMessage, [googleResult]);
+            response += ` ${googleResult}. I'll remember this for next time.`;
         } catch (error) {
             console.error("Error searching Google:", error);
         }
     } else {
-        response += " " + matchedAnswer;
+        response = matchedAnswer;  // Return only the matched answer to avoid duplication
     }
 
     res.send(response);
 });
 
-
-
-
-//math functions....
-// Function to check if the message contains a mathematical expression
+// Math functions
 function containsMathExpression(message) {
-    // Regular expression to match and extract mathematical expressions
     const mathRegex = /(?:\s|^)(\d+(?:\.\d+)?(?:[\+\-\*\/\^]\d+(?:\.\d+)?)+)(?:\s|$)/g;
     const matches = message.match(mathRegex);
-
-    if (matches) {
-        const expressions = matches.map(match => match.trim());
-        return expressions;
-    }
-
-    return null;
+    return matches ? matches.map(match => match.trim()) : null;
 }
 
-
-// Function to evaluate a mathematical expression
 function evaluateMathExpression(expression) {
     try {
-        // Using JavaScript's eval() to evaluate the expression
         const result = eval(expression);
         return result;
     } catch (error) {
-        // Handle potential errors during evaluation
         console.error("Error evaluating math expression:", error);
         return "Sorry, I couldn't evaluate that expression.";
     }
 }
 
-
-
-
+// Google search function
 async function searchGoogle(query) {
     const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     try {
         const response = await axios.get(googleSearchUrl);
         const html = response.data;
-
-        // Load HTML content into Cheerio
         const $ = cheerio.load(html);
-
-        // Extract specific information about the user's query
         const description = $("div.BNeawe.vvjwJb.AP7Wnd").first().text();
-
-        // Construct the response with the extracted information
-        const responseText = `I think ${description}`;
-        return responseText;
+        return `I think ${description}`;
     } catch (error) {
         throw error;
     }
 }
 
+// Response generation functions
 function generateResponse(userMessage) {
     const matchedAnswer = findMatchingAnswer(userMessage);
     if (matchedAnswer) {
         return matchedAnswer;
     }
-
-    const taggedWords = new pos.Lexer().lex(userMessage);
-    const tagger = new pos.Tagger();
-    const taggedWordsWithPOS = tagger.tag(taggedWords);
 
     const nouns = extractNouns(userMessage);
     const verbs = extractVerbs(userMessage);
@@ -172,13 +138,8 @@ function isInformation(userMessage) {
 
 function extractInformation(userMessage) {
     const sentences = userMessage.split(/[.!?]/);
-    const informationSentences = sentences.filter((sentence) =>
-        sentence.toLowerCase().includes("information"),
-    );
-    return informationSentences;
+    return sentences.filter((sentence) => sentence.toLowerCase().includes("information"));
 }
-
-
 
 function escapeHTML(html) {
     return html.replace(/&/g, '&amp;')
@@ -189,18 +150,14 @@ function escapeHTML(html) {
 }
 
 function saveInformationToJSON(uq, informationSentences) {
-    // Combine information sentences into a single string
     const combinedHTML = informationSentences.join(" ");
-
-    // Escape HTML tags
     const escapedHTML = escapeHTML(combinedHTML);
 
     const newData = {
-        question: uq,
+        question: uq + " " + escapedHTML.trim(),
         answer: escapedHTML.trim(),
     };
 
-    // Assuming data is defined somewhere in your code
     data.data.push(newData);
 
     fs.writeFile("./hamza.json", JSON.stringify(data, null, 2), (err) => {
@@ -212,8 +169,6 @@ function saveInformationToJSON(uq, informationSentences) {
     });
 }
 
-
-
 function generateRandomInterjectionResponse() {
     const interjections = [
         "Nice!",
@@ -222,16 +177,9 @@ function generateRandomInterjectionResponse() {
         "Sweet!",
         "Great!",
         "Fantastic!",
-        "amazing",
-        "wow",
-        "woww",
-        "wowww",
-        "wowwww",
-        "wowwwww",
-        "nice",
-        "ofcourse",
-        "nice",
-        "great"
+        "Amazing!",
+        "Wow!",
+        "Of course!",
     ];
     return interjections[Math.floor(Math.random() * interjections.length)];
 }
@@ -243,13 +191,13 @@ function generateRandomGreetingResponse() {
         "Hey!",
         "Greetings!",
         "What's up?",
-        "Howdy!",
+        "Howdy!","Thanks for appropriating us "
     ];
     return greetings[Math.floor(Math.random() * greetings.length)];
 }
 
 function isGreeting(userMessage) {
-    const greetings = ["hello", "hi", "hey", "greetings", "what's up", "howdy","whats up" , "thanks"];
+    const greetings = ["hello", "hi", "hey", "greetings", "what's up", "howdy", "thanks"];
     return greetings.includes(userMessage.toLowerCase());
 }
 
