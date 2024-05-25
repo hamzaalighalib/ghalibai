@@ -1,5 +1,7 @@
 const express = require("express");
 const natural = require("natural");
+const cors = require("cors"); // Import the cors middleware
+
 const pos = require("pos");
 const fs = require("fs");
 const path = require("path");
@@ -10,6 +12,8 @@ const htmlToText = require('html-to-text');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const data = require("./hamza.json");
+
+app.use(cors()); // Enable CORS for all routes
 
 app.use(express.static(path.join(__dirname, "public")));
 
