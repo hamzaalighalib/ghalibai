@@ -164,13 +164,13 @@ function saveInformationToJSON(uq, informationSentences) {
 
     data.data.push(newData);
 
-    fs.writeFile("./hamza.json", JSON.stringify(data, null, 2), (err) => {
-        if (err) {
-            console.error("Error writing to hamza.json:", err);
-        } else {
-            console.log("Data added to hamza.json:", newData);
-        }
-    });
+    // fs.writeFile("./hamza.json", JSON.stringify(data, null, 2), (err) => {
+    //     if (err) {
+    //         console.error("Error writing to hamza.json:", err);
+    //     } else {
+    //         console.log("Data added to hamza.json:", newData);
+    //     }
+    // });
 }
 
 function generateRandomInterjectionResponse() {
@@ -205,14 +205,39 @@ function isGreeting(userMessage) {
     return greetings.includes(userMessage.toLowerCase());
 }
 
+
 function findMatchingAnswer(userMessage) {
+    const lowerCaseMessage = userMessage.toLowerCase(); // Convert user message to lowercase once
+
     for (const item of data.data) {
-        if (item.question.toLowerCase().includes(userMessage)) {
-            return item.answer;
+        const lowerCaseQuestion = item.question.toLowerCase(); // Convert question to lowercase
+
+        if (lowerCaseQuestion.includes(lowerCaseMessage)) {
+            console.log("Question found:", item.question);
+            // console.log("ans is:", item.answers);
+            console.log(
+                "Answer type:",
+                Array.isArray(item.answers) ? "Array" : typeof item.answers,
+            );
+
+            if (Array.isArray(item.answers)) {
+                // Select a random answer if the answer is an array
+                const randomIndex = Math.floor(
+                    Math.random() * item.answers.length,
+                );
+                console.log("Random index selected:", randomIndex);
+                return item.answers[randomIndex];
+            } else {
+                // Return the single answer
+                return item.answers;
+            }
         }
     }
+
+    console.log("No matching question found for:", userMessage);
     return null;
 }
+
 
 
 app.listen(PORT, () => {
