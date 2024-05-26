@@ -1,6 +1,79 @@
 {
   "data": [
     {
+    "question": "What is programming?",
+    "answers": [
+      "Programming is the process of creating instructions (code) that a computer can execute to perform specific tasks or functions."
+    ]
+  },
+  {
+    "question": "What is coding?",
+    "answers": [
+      "Coding is the act of writing and implementing code to create software, applications, websites, or other digital products."
+    ]
+  },
+  {
+    "question": "What is HTML?",
+    "answers": [
+      "HTML (Hypertext Markup Language) is the standard markup language used to create and design web pages."
+    ]
+  },
+  {
+    "question": "What is CSS?",
+    "answers": [
+      "CSS (Cascading Style Sheets) is a stylesheet language used to style the presentation of HTML elements in a web page."
+    ]
+  },
+  {
+    "question": "What is JavaScript?",
+    "answers": [
+      "JavaScript is a programming language commonly used to create interactive effects and dynamic behavior on web pages."
+    ]
+  },
+  {
+    "question": "What is a variable in programming?",
+    "answers": [
+      "A variable is a container used to store data or information in a programming language. It has a name and can hold different values."
+    ]
+  },
+  {
+    "question": "What is an if statement?",
+    "answers": [
+      "An if statement is a conditional statement used in programming to execute a block of code if a specified condition is true."
+    ]
+  },
+  {
+    "question": "What is a loop in programming?",
+    "answers": [
+      "A loop is a programming construct that repeats a block of code multiple times until a specified condition is met or for a predetermined number of iterations."
+    ]
+  },
+  {
+    "question": "What is debugging?",
+    "answers": [
+      "Debugging is the process of identifying and fixing errors or bugs in a computer program to make it work correctly."
+    ]
+  },
+  {
+    "question": "What is version control?",
+    "answers": [
+      "Version control is a system that tracks changes to files and directories over time, allowing multiple users to collaborate on a project and manage different versions of the project's files."
+    ]
+  },
+  {
+    "question": "What is an API?",
+    "answers": [
+      "An API (Application Programming Interface) is a set of rules and protocols that allows different software applications to communicate and interact with each other."
+    ]
+  },
+  {
+    "question": "What is a database?",
+    "answers": [
+      "A database is a structured collection of data organized and stored in a way that allows for efficient retrieval, updating, and management of data."
+    ]
+  }
+    ,
+    {
       "question": "danial azam kon ha",
       "answers": [
         "Yes, Danial Azam is a talented web developer and a close friend of the famous developer Mr. Hamza Ali Ghalib. this photo of danial azam<br><img src='https://wikialpha.org/mediawiki/images/8/87/DanialAzamofficial.jpeg' width='300px' class='mx-auto width:300px; rounded-md'>",
