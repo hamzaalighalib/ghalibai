@@ -35,12 +35,11 @@
             userInput.value = '';
         });
 
-        function appendMessage(status, sender, message) {
+       function appendMessage(status, sender, message) {
             const messageElement = document.createElement('div');
             messageElement.className = sender === 'You' ? `p-2 rounded-xl bg-green-100 self-start max-w-md` : `p-2 rounded-xl bg-${status ? 'blue' : 'red'}-100 self-end max-w-md`;
             chatContainer.appendChild(messageElement);
 
-            // Create separate spans for sender and message to apply typewriter effect individually
             const senderSpan = document.createElement('span');
             senderSpan.innerHTML = `<strong>${sender}:</strong> `;
             messageElement.appendChild(senderSpan);
@@ -48,23 +47,38 @@
             const messageSpan = document.createElement('span');
             messageElement.appendChild(messageSpan);
 
-            // Typewriter effect
             let index = 0;
+            let inTag = false; // Flag to track if currently inside an HTML tag
             const typingInterval = setInterval(() => {
                 if (index < message.length) {
-                    // Check for <br> tags and execute them
-                    if (message.charAt(index) === '<' && message.charAt(index + 1) === 'b' && message.charAt(index + 2) === 'r' && message.charAt(index + 3) === '>') {
-                        index += 4; // Skip the <br> tag
-                        messageSpan.innerHTML += '<br>'; // Execute <br> tag
-                    } else {
+                    if (message.charAt(index) === '<') {
+                        // If encountering '<', set the inTag flag to true
+                        inTag = true;
+                        const closingBracketIndex = message.indexOf('>', index);
+                        const tag = message.substring(index, closingBracketIndex + 1);
+                        const tagName = tag.match(/<\/?(\w+)\s*[^>]*>/)[1].toLowerCase();
+                        if (['a', 'br', 'hr', 'code', 'img'].includes(tagName)) {
+                            // If the tag is one of the specified tags, append it to the message span
+                            messageSpan.innerHTML += tag;
+                        }
+                        index = closingBracketIndex + 1;
+                    } else if (message.charAt(index) === '>') {
+                        // If encountering '>', set the inTag flag to false
+                        inTag = false;
+                        index++;
+                    } else if (!inTag) {
+                        // If not inside an HTML tag, append the character
                         messageSpan.textContent += message.charAt(index);
                         chatContainer.scrollTop = chatContainer.scrollHeight;
+                        index++;
+                    } else {
+                        // If inside an HTML tag, skip the character
                         index++;
                     }
                 } else {
                     clearInterval(typingInterval);
                 }
-            }, 7); // Adjust typing speed here
+            }, 7);
         }
 
 
