@@ -1,30 +1,38 @@
 const express = require("express");
-const natural = require("natural");
-const cors = require("cors"); // Import the cors middleware
 
 const pos = require("pos");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const cheerio = require("cheerio");
-const htmlToText = require('html-to-text');
+
+const use = require('@tensorflow-models/universal-sentence-encoder');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const data = require("./hamza.json");
 
-app.use(cors()); // Enable CORS for all routes
+let model;
+
+// Load the Universal Sentence Encoder model
+async function loadModel() {
+    model = await use.load();
+    console.log("Model loaded.");
+}
+
+// Call the loadModel function to load the model when the server starts
+loadModel();
 
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/chat", async (req, res) => {
     const userMessage = req.query.message.toLowerCase();
-    let response = generateResponse(userMessage);
+    let response = await generateResponse(userMessage);
 
-    // Math handling
+    // Math...
     if (containsMathExpression(userMessage)) {
         const calculationResult = evaluateMathExpression(userMessage);
-        response = `Your result: ${calculationResult} - <br>`;
+        response = `Your result: ${calculationResult} - <br>` + response;
     }
 
     if (userMessage.includes("oh") || userMessage.includes("oops")) {
@@ -38,33 +46,79 @@ app.get("/chat", async (req, res) => {
     if (isInformation(userMessage)) {
         const informationSentences = extractInformation(userMessage);
         saveInformationToJSON(userMessage, informationSentences);
-        response += ` I think you may know about ${informationSentences.join(" ")}. Please provide me more information about this, so I can remember it for next time.`;
+        response += `I think you may know about ${informationSentences.join(" ")}. Please provide me more information about this, so I can remember it for next time.`;
     }
 
-    const matchedAnswer = findMatchingAnswer(userMessage);
+    const matchedAnswer = await findMatchingAnswer(userMessage);
     if (!matchedAnswer) {
         response += " Thanks for assisting us.";
         try {
             const googleResult = await searchGoogle(userMessage);
             saveInformationToJSON(userMessage, [googleResult]);
-            response += ` ${googleResult}. I'll remember this for next time.`;
+            response += `${googleResult}. I'll remember this for next time.`;
         } catch (error) {
             console.error("Error searching Google:", error);
         }
     } else {
-        response = matchedAnswer;  // Return only the matched answer to avoid duplication
+        response += " " + matchedAnswer;
     }
 
     res.send(response);
 });
 
-// Math functions
+// Function to find the most similar question
+async function findMatchingAnswer(userMessage) {
+    const lowerCaseMessage = userMessage.toLowerCase();
+    const inputEmbedding = await model.embed([lowerCaseMessage]);
+    const questionEmbeddings = await model.embed(data.data.map(item => item.question.toLowerCase()));
+
+    let maxSimilarity = -Infinity;
+    let mostSimilarQuestionIndex = -1;
+
+    questionEmbeddings.arraySync().forEach((embedding, index) => {
+        const similarity = cosineSimilarity(inputEmbedding.arraySync()[0], embedding);
+        if (similarity > maxSimilarity) {
+            maxSimilarity = similarity;
+            mostSimilarQuestionIndex = index;
+        }
+    });
+
+    if (mostSimilarQuestionIndex !== -1) {
+        const matchedQuestion = data.data[mostSimilarQuestionIndex];
+        console.log("Question found:", matchedQuestion.question);
+        if (Array.isArray(matchedQuestion.answers)) {
+            const randomIndex = Math.floor(Math.random() * matchedQuestion.answers.length);
+            console.log("Random index selected:", randomIndex);
+            return matchedQuestion.answers[randomIndex];
+        } else {
+            return matchedQuestion.answers;
+        }
+    }
+
+    console.log("No matching question found for:", userMessage);
+    return null;
+}
+
+// Function to calculate cosine similarity
+function cosineSimilarity(a, b) {
+    const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+    const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+    const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+    return dotProduct / (magnitudeA * magnitudeB);
+}
+
+// Function to check if the message contains a mathematical expression
 function containsMathExpression(message) {
     const mathRegex = /(?:\s|^)(\d+(?:\.\d+)?(?:[\+\-\*\/\^]\d+(?:\.\d+)?)+)(?:\s|$)/g;
     const matches = message.match(mathRegex);
-    return matches ? matches.map(match => match.trim()) : null;
+    if (matches) {
+        const expressions = matches.map((match) => match.trim());
+        return expressions;
+    }
+    return null;
 }
 
+// Function to evaluate a mathematical expression
 function evaluateMathExpression(expression) {
     try {
         const result = eval(expression);
@@ -75,7 +129,6 @@ function evaluateMathExpression(expression) {
     }
 }
 
-// Google search function
 async function searchGoogle(query) {
     const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     try {
@@ -83,18 +136,22 @@ async function searchGoogle(query) {
         const html = response.data;
         const $ = cheerio.load(html);
         const description = $("div.BNeawe.vvjwJb.AP7Wnd").first().text();
-        return `I think ${description}`;
+        const responseText = `I think ${description}`;
+        return responseText;
     } catch (error) {
         throw error;
     }
 }
 
-// Response generation functions
-function generateResponse(userMessage) {
-    const matchedAnswer = findMatchingAnswer(userMessage);
+async function generateResponse(userMessage) {
+    const matchedAnswer = await findMatchingAnswer(userMessage);
     if (matchedAnswer) {
         return matchedAnswer;
     }
+
+    const taggedWords = new pos.Lexer().lex(userMessage);
+    const tagger = new pos.Tagger();
+    const taggedWordsWithPOS = tagger.tag(taggedWords);
 
     const nouns = extractNouns(userMessage);
     const verbs = extractVerbs(userMessage);
@@ -142,15 +199,19 @@ function isInformation(userMessage) {
 
 function extractInformation(userMessage) {
     const sentences = userMessage.split(/[.!?]/);
-    return sentences.filter((sentence) => sentence.toLowerCase().includes("information"));
+    const informationSentences = sentences.filter((sentence) =>
+        sentence.toLowerCase().includes("information")
+    );
+    return informationSentences;
 }
 
 function escapeHTML(html) {
-    return html.replace(/&/g, '&amp;')
-               .replace(/</g, '&lt;')
-               .replace(/>/g, '&gt;')
-               .replace(/"/g, '&quot;')
-               .replace(/'/g, '&#39;');
+    return html
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }
 
 function saveInformationToJSON(uq, informationSentences) {
@@ -158,19 +219,19 @@ function saveInformationToJSON(uq, informationSentences) {
     const escapedHTML = escapeHTML(combinedHTML);
 
     const newData = {
-        question: uq + " " + escapedHTML.trim(),
-        answer: escapedHTML.trim(),
+        question: uq,
+        answers: [escapedHTML.trim()],
     };
 
     data.data.push(newData);
 
-    // fs.writeFile("./hamza.json", JSON.stringify(data, null, 2), (err) => {
-    //     if (err) {
-    //         console.error("Error writing to hamza.json:", err);
-    //     } else {
-    //         console.log("Data added to hamza.json:", newData);
-    //     }
-    // });
+    fs.writeFile("./hamza.json", JSON.stringify(data, null, 2), (err) => {
+        if (err) {
+            console.error("Error writing to hamza.json:", err);
+        } else {
+            console.log("Data added to hamza.json:", newData);
+        }
+    });
 }
 
 function generateRandomInterjectionResponse() {
@@ -183,7 +244,13 @@ function generateRandomInterjectionResponse() {
         "Fantastic!",
         "Amazing!",
         "Wow!",
+        "Woww!",
+        "Wowww!",
+        "Wowwww!",
+        "Wowwwww!",
+        "Nice!",
         "Of course!",
+        "",
     ];
     return interjections[Math.floor(Math.random() * interjections.length)];
 }
@@ -195,50 +262,15 @@ function generateRandomGreetingResponse() {
         "Hey!",
         "Greetings!",
         "What's up?",
-        "Howdy!","Thanks for appropriating us "
+        "Howdy!",
     ];
     return greetings[Math.floor(Math.random() * greetings.length)];
 }
 
 function isGreeting(userMessage) {
-    const greetings = ["hello", "hi", "hey", "greetings", "what's up", "howdy", "thanks"];
+    const greetings = ["hello", "hi", "hey", "greetings", "what's up", "howdy"];
     return greetings.includes(userMessage.toLowerCase());
 }
-
-
-function findMatchingAnswer(userMessage) {
-    const lowerCaseMessage = userMessage.toLowerCase(); // Convert user message to lowercase once
-
-    for (const item of data.data) {
-        const lowerCaseQuestion = item.question.toLowerCase(); // Convert question to lowercase
-
-        if (lowerCaseQuestion.includes(lowerCaseMessage)) {
-            console.log("Question found:", item.question);
-            // console.log("ans is:", item.answers);
-            console.log(
-                "Answer type:",
-                Array.isArray(item.answers) ? "Array" : typeof item.answers,
-            );
-
-            if (Array.isArray(item.answers)) {
-                // Select a random answer if the answer is an array
-                const randomIndex = Math.floor(
-                    Math.random() * item.answers.length,
-                );
-                console.log("Random index selected:", randomIndex);
-                return item.answers[randomIndex];
-            } else {
-                // Return the single answer
-                return item.answers;
-            }
-        }
-    }
-
-    console.log("No matching question found for:", userMessage);
-    return null;
-}
-
-
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
