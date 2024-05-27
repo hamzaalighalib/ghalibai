@@ -1,28 +1,39 @@
 const express = require("express");
 const natural = require("natural");
-const cors = require("cors");
 const pos = require("pos");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const cheerio = require("cheerio");
-const htmlToText = require('html-to-text');
+const htmlToText = require("html-to-text");
+const tf = require('@tensorflow/tfjs-node');
+const use = require('@tensorflow-models/universal-sentence-encoder');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const data = require("./hamza.json");
 
-app.use(cors());
+let model;
+
+// Load the Universal Sentence Encoder model
+async function loadModel() {
+    model = await use.load();
+    console.log("Model loaded.");
+}
+
+// Call the loadModel function to load the model when the server starts
+loadModel();
 
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/chat", async (req, res) => {
     const userMessage = req.query.message.toLowerCase();
-    let response = generateResponse(userMessage);
+    let response = await generateResponse(userMessage);
 
+    // Handle math expressions
     if (containsMathExpression(userMessage)) {
         const calculationResult = evaluateMathExpression(userMessage);
-        response = `Your result: ${calculationResult} - <br>`;
+        response = `Your result: ${calculationResult} - <br> ${response}`;
     }
 
     if (userMessage.includes("oh") || userMessage.includes("oops")) {
@@ -36,32 +47,78 @@ app.get("/chat", async (req, res) => {
     if (isInformation(userMessage)) {
         const informationSentences = extractInformation(userMessage);
         saveInformationToJSON(userMessage, informationSentences);
-        response += ` I think you may know about ${informationSentences.join(" ")}. Please provide me more information about this, so I can remember it for next time.`;
+        response += `I think you may know about ${informationSentences.join(" ")}. Please provide me more information about this, so I can remember it for next time.`;
     }
 
-    const matchedAnswer = findMatchingAnswer(userMessage);
+    const matchedAnswer = await findMatchingAnswer(userMessage);
     if (!matchedAnswer) {
         response += " Thanks for assisting us.";
         try {
             const googleResult = await searchGoogle(userMessage);
             saveInformationToJSON(userMessage, [googleResult]);
-            response += ` ${googleResult}. I'll remember this for next time.`;
+            response += `${googleResult}. I'll remember this for next time.`;
         } catch (error) {
             console.error("Error searching Google:", error);
         }
     } else {
-        response = matchedAnswer; // Return only the matched answer to avoid duplication
+        response += " " + matchedAnswer;
     }
 
     res.send(response);
 });
 
+// Function to find the most similar question
+async function findMatchingAnswer(userMessage) {
+    const lowerCaseMessage = userMessage.toLowerCase();
+    const inputEmbedding = await model.embed([lowerCaseMessage]);
+    const questionEmbeddings = await model.embed(data.data.map(item => item.question.toLowerCase()));
+
+    let maxSimilarity = -Infinity;
+    let mostSimilarQuestionIndex = -1;
+
+    questionEmbeddings.arraySync().forEach((embedding, index) => {
+        const similarity = cosineSimilarity(inputEmbedding.arraySync()[0], embedding);
+        if (similarity > maxSimilarity) {
+            maxSimilarity = similarity;
+            mostSimilarQuestionIndex = index;
+        }
+    });
+
+    if (mostSimilarQuestionIndex !== -1) {
+        const matchedQuestion = data.data[mostSimilarQuestionIndex];
+        console.log("Question found:", matchedQuestion.question);
+        if (Array.isArray(matchedQuestion.answers)) {
+            const randomIndex = Math.floor(Math.random() * matchedQuestion.answers.length);
+            console.log("Random index selected:", randomIndex);
+            return matchedQuestion.answers[randomIndex];
+        } else {
+            return matchedQuestion.answers;
+        }
+    }
+
+    console.log("No matching question found for:", userMessage);
+    return null;
+}
+
+// Function to calculate cosine similarity
+function cosineSimilarity(a, b) {
+    const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+    const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+    const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+    return dotProduct / (magnitudeA * magnitudeB);
+}
+
+// Function to check if the message contains a mathematical expression
 function containsMathExpression(message) {
     const mathRegex = /(?:\s|^)(\d+(?:\.\d+)?(?:[\+\-\*\/\^]\d+(?:\.\d+)?)+)(?:\s|$)/g;
     const matches = message.match(mathRegex);
-    return matches ? matches.map(match => match.trim()) : null;
+    if (matches) {
+        return matches.map(match => match.trim());
+    }
+    return null;
 }
 
+// Function to evaluate a mathematical expression
 function evaluateMathExpression(expression) {
     try {
         const result = eval(expression);
@@ -85,11 +142,15 @@ async function searchGoogle(query) {
     }
 }
 
-function generateResponse(userMessage) {
-    const matchedAnswer = findMatchingAnswer(userMessage);
+async function generateResponse(userMessage) {
+    const matchedAnswer = await findMatchingAnswer(userMessage);
     if (matchedAnswer) {
         return matchedAnswer;
     }
+
+    const taggedWords = new pos.Lexer().lex(userMessage);
+    const tagger = new pos.Tagger();
+    const taggedWordsWithPOS = tagger.tag(taggedWords);
 
     const nouns = extractNouns(userMessage);
     const verbs = extractVerbs(userMessage);
@@ -137,15 +198,16 @@ function isInformation(userMessage) {
 
 function extractInformation(userMessage) {
     const sentences = userMessage.split(/[.!?]/);
-    return sentences.filter((sentence) => sentence.toLowerCase().includes("information"));
+    return sentences.filter(sentence => sentence.toLowerCase().includes("information"));
 }
 
 function escapeHTML(html) {
-    return html.replace(/&/g, '&amp;')
-               .replace(/</g, '&lt;')
-               .replace(/>/g, '&gt;')
-               .replace(/"/g, '&quot;')
-               .replace(/'/g, '&#39;');
+    return html
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }
 
 function saveInformationToJSON(uq, informationSentences) {
