@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const cheerio = require("cheerio");
-
+ 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const data = require("./hamza.json");
