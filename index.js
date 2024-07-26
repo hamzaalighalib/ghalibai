@@ -5,22 +5,21 @@ const pos = require("pos");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
-const cheerio = require("cheerio");
- 
-const app = express();
-const PORT = process.env.PORT || 3000;
 const data = require("./hamza.json");
 
-app.use(cors());
+const app = express();
+const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/chat", async (req, res) => {
     const userMessage = req.query.message.toLowerCase();
     let response = generateResponse(userMessage);
 
-    if (containsMathExpression(userMessage)) {
-        const calculationResult = evaluateMathExpression(userMessage);
+    const mathExpression = containsMathExpression(userMessage);
+    if (mathExpression) {
+        const calculationResult = evaluateMathExpression(mathExpression);
         response = `Your result: ${calculationResult}`;
     }
 
@@ -42,14 +41,15 @@ app.get("/chat", async (req, res) => {
     if (!matchedAnswer) {
         response += " Thanks for assisting us.";
         try {
-            const googleResult = await searchGoogle(userMessage);
-            saveInformationToJSON(userMessage, [googleResult]);
-            response += ` ${googleResult}. I'll remember this for next time.`;
+            const searchResult = await searchDuckDuckGo(userMessage);
+            saveInformationToJSON(userMessage, [searchResult]);
+            response += ` ${searchResult}. I'll remember this for next time.`;
         } catch (error) {
-            console.error("Error searching Google:", error);
+            console.error("Error searching DuckDuckGo:", error);
+            response += " Sorry, I couldn't find an answer to that.";
         }
     } else {
-        response = matchedAnswer; // Return only the matched answer to avoid duplication
+        response = matchedAnswer;
     }
 
     res.send(response);
@@ -58,7 +58,7 @@ app.get("/chat", async (req, res) => {
 function containsMathExpression(message) {
     const mathRegex = /(?:\s|^)(\d+(?:\.\d+)?(?:[\+\-\*\/\^]\d+(?:\.\d+)?)+)(?:\s|$)/g;
     const matches = message.match(mathRegex);
-    return matches ? matches.map(match => match.trim()) : null;
+    return matches ? matches[0].trim() : null;
 }
 
 function evaluateMathExpression(expression) {
@@ -71,14 +71,17 @@ function evaluateMathExpression(expression) {
     }
 }
 
-async function searchGoogle(query) {
-    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+async function searchDuckDuckGo(query) {
+    const apiUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&pretty=1`;
     try {
-        const response = await axios.get(googleSearchUrl);
-        const html = response.data;
-        const $ = cheerio.load(html);
-        const description = $("div.BNeawe.vvjwJb.AP7Wnd").first().text();
-        return `I think ${description}`;
+        const response = await axios.get(apiUrl);
+        if (response.data.AbstractText) {
+            return response.data.AbstractText;
+        } else if (response.data.RelatedTopics && response.data.RelatedTopics.length > 0) {
+            return response.data.RelatedTopics[0].Text;
+        } else {
+            return "Sorry, I couldn't find any relevant information.";
+        }
     } catch (error) {
         throw error;
     }
