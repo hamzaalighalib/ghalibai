@@ -6,7 +6,6 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const cheerio = require("cheerio");
-const htmlToText = require('html-to-text');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,7 +21,7 @@ app.get("/chat", async (req, res) => {
 
     if (containsMathExpression(userMessage)) {
         const calculationResult = evaluateMathExpression(userMessage);
-        response = `Your result: ${calculationResult} - <br>`;
+        response = `Your result: ${calculationResult}`;
     }
 
     if (userMessage.includes("oh") || userMessage.includes("oops")) {
@@ -158,6 +157,7 @@ function saveInformationToJSON(uq, informationSentences) {
     };
 
     data.data.push(newData);
+    fs.writeFileSync("./hamza.json", JSON.stringify(data, null, 2));
 }
 
 function generateRandomInterjectionResponse() {
