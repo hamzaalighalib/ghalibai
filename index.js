@@ -41,7 +41,7 @@ app.get("/chat", async (req, res) => {
     if (!matchedAnswer) {
         response += " Thanks for assisting us.";
         try {
-            const searchResult = await searchDuckDuckGo(userMessage);
+            const searchResult = await searchGoogle(userMessage);
             saveInformationToJSON(userMessage, [searchResult]);
             response += ` ${searchResult}. I'll remember this for next time.`;
         } catch (error) {
@@ -71,19 +71,49 @@ function evaluateMathExpression(expression) {
     }
 }
 
-async function searchDuckDuckGo(query) {
-    const apiUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&pretty=1`;
+
+async function searchGoogle(query) {
+    const apiUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+
     try {
-        const response = await axios.get(apiUrl);
-        if (response.data.AbstractText) {
-            return response.data.AbstractText;
-        } else if (response.data.RelatedTopics && response.data.RelatedTopics.length > 0) {
-            return response.data.RelatedTopics[0].Text;
+        const response = await axios.get(apiUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+
+        const html = response.data;
+        const $ = cheerio.load(html);
+
+        const links = [];
+        $('a').each((i, link) => {
+            const href = $(link).attr('href');
+            if (href && href.startsWith('/url?q=')) {
+                const url = new URL(href, 'https://www.google.com').searchParams.get('q');
+                if (url) {
+                    links.push(url);
+                }
+            }
+        });
+
+        if (links.length > 0) {
+            // Pick a random link from the search results
+            const randomLink = links[Math.floor(Math.random() * links.length)];
+
+            // Fetch the content of the chosen link
+            const pageResponse = await axios.get(randomLink);
+            const pageHtml = pageResponse.data;
+            const $$ = cheerio.load(pageHtml);
+
+            // Extract the main content (this part may need adjustment based on the page structure)
+            const paragraphs = $$('#content p').text();
+            return paragraphs || "Sorry, I couldn't find any relevant information.";
         } else {
             return "Sorry, I couldn't find any relevant information.";
         }
     } catch (error) {
-        throw error;
+        console.error("Error searching Google:", error);
+        return "Sorry, there was an error fetching data from Google.";
     }
 }
 
