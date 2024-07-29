@@ -9,19 +9,17 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  {
   "dependencies": {
-    "@google-cloud/translate": "^8.3.0",
-    "@types/node": "^18.0.6",
-    "axios": "^1.7.2",
-    "cheerio": "^1.0.0-rc.12",
-    "compromise": "^14.13.0",
-    "express": "^4.19.2",
-    "html-to-text": "^9.0.5",
-    "mysql": "^2.18.1",
-    "natural": "^7.0.5",
-    "nlp_compromise": "^7.0.0",
+    "express": "^4.17.1",
+    "cors": "^2.8.5",
     "pos": "^0.4.2",
-     "cors": "^2.8.5"
-
+    "fs": "0.0.1-security",
+    "path": "^0.12.7",
+    "axios": "^0.21.1",
+    "openai": "^3.0.0",
+    "dotenv": "^10.0.0"
   }
 }
+
+
