@@ -7,12 +7,13 @@ const path = require("path");
 const axios = require("axios");
 const data = require("./hamza.json");
 const OpenAI = require("openai");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const openai = new OpenAI({
-    apiKey: "sk-proj-QcTM6rJboHHw1v75daJPT3BlbkFJlPPvToPphodkBzfrlkY2",
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 app.use(cors());
@@ -54,7 +55,7 @@ async function generateResponse(userMessage) {
     try {
         const chatCompletion = await openai.chat.completions.create({
             messages: [{ role: "user", content: userMessage }],
-            model: "gpt-4o-mini",
+            model: "gpt-4",
         });
 
         const aiResponse = chatCompletion.choices[0].message.content.trim();
