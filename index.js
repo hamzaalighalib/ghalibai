@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/chat", async (req, res) => {
+app.get("/chat", async (req, res) => { 
     const userMessage = req.query.message.toLowerCase();
     let response = generateResponse(userMessage);
 
