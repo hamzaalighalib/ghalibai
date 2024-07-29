@@ -1,21 +1,21 @@
 {
-  'name': 'nodejs',
-  'version': '1.0.0',
-  'description': '',
-  'main': 'index.js',
-  'scripts': {
-    'test': 'echo \'Error: no test specified\' && exit 1'
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  'keywords': [],
-  'author': '',
-  'license': 'ISC',
-  'dependencies': {
-    'express': '^4.17.1',
-    'cors': '^2.8.5',
-    'pos': '^0.4.2',
-    'fs': '0.0.1-security',
-    'path': '^0.12.7',
-    'axios': '^0.21.1',
-    'openai': '^3.0.0'
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "cors": "^2.8.5",
+    "pos": "^0.4.2",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7",
+    "axios": "^0.21.1",
+    "openai": "^3.0.0"
   }
 }
