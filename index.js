@@ -7,13 +7,12 @@ const path = require("path");
 const axios = require("axios");
 const data = require("./hamza.json");
 const OpenAI = require("openai");
-require("dotenv").config();
  
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: "sk-proj-QcTM6rJboHHw1v75daJPT3BlbkFJlPPvToPphodkBzfrlkY2",
 });
 
 app.use(cors());
