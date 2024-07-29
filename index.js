@@ -6,10 +6,14 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const data = require("./hamza.json");
+const OpenAI = require("openai");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const openaiApiKey = 'sk-proj-QcTM6rJboHHw1v75daJPT3BlbkFJlPPvToPphodkBzfrlkY2';
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
@@ -48,22 +52,12 @@ async function generateResponse(userMessage) {
     }
 
     try {
-        const openaiResponse = await axios.post(
-            'https://api.openai.com/v1/engines/davinci/completions',
-            {
-                prompt: userMessage,
-                max_tokens: 150,
-                temperature: 0.7,
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${openaiApiKey}`,
-                    'Content-Type': 'application/json',
-                },
-            }
-        );
+        const chatCompletion = await openai.chat.completions.create({
+            messages: [{ role: "user", content: userMessage }],
+            model: "gpt-4o-mini",
+        });
 
-        const aiResponse = openaiResponse.data.choices[0].text.trim();
+        const aiResponse = chatCompletion.choices[0].message.content.trim();
         return aiResponse;
     } catch (error) {
         console.error("Error fetching response from OpenAI:", error);
