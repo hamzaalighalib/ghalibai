@@ -1,22 +1,21 @@
 {
   "name": "nodejs",
   "version": "1.0.0",
-  "description": "",
+  "description": "A chatbot server using natural language processing.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["chatbot", "nlp", "natural"],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "pos": "^0.4.2",
+    "natural": "^5.2.0",
     "fs": "0.0.1-security",
     "path": "^0.12.7",
-    "axios": "^0.21.1",
-    "openai": "^3.0.0"
+    "axios": "^0.27.2"
   }
 }
