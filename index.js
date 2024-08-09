@@ -96,7 +96,7 @@ function generateNameBasedResponse(message) {
     const match = message.match(nameRegex);
     if (match && match[1]) {
         const name = match[1];
-        return `The name of ${name} is ${getNameInfo(name)}.`;
+        return getNameInfo(name);
     }
     return null;
 }
@@ -104,7 +104,13 @@ function generateNameBasedResponse(message) {
 // Function to get name information (placeholder)
 function getNameInfo(name) {
     // Replace this with actual logic or data retrieval
-    return "ChatBot"; // Example response
+    // Example: Return name-specific info if available
+    const nameData = {
+        "hamza": "Hamza Ali Ghalib is a developer known for his work on various tech projects.",
+        "nodejs": "Node.js is a runtime environment that allows you to run JavaScript code outside the browser."
+    };
+
+    return nameData[name.toLowerCase()] || `I don't have specific information about ${name}.`;
 }
 
 // Route for chat messages
