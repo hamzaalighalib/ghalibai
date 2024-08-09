@@ -3,6 +3,9 @@ const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const natural = require("natural");
+const axios = require("axios");
+const cheerio = require("cheerio");
+const querystring = require("querystring");
 
 // Create Express application
 const app = express();
@@ -28,7 +31,7 @@ function processText(text) {
 }
 
 // Function to generate response based on message
-function generateResponse(userMessage) {
+async function generateResponse(userMessage) {
     const processedMessage = processText(userMessage);
 
     // Check for contextual responses
@@ -43,6 +46,11 @@ function generateResponse(userMessage) {
         return nameResponse;
     }
 
+    // Check for information queries and fetch data
+    if (isInformationQuery(userMessage)) {
+        return await fetchAndGenerateArticle(userMessage);
+    }
+
     // Find a matching answer from the JSON data
     for (const item of data.data) {
         const processedQuestion = processText(item.question);
@@ -54,6 +62,73 @@ function generateResponse(userMessage) {
     
     // Default response if no match is found
     return "I'm not sure how to respond to that. Can you please rephrase?";
+}
+
+// Function to check if the query is asking for information
+function isInformationQuery(message) {
+    return /information|details|facts|about/i.test(message);
+}
+
+// Function to search Google for URLs (using scraping)
+async function searchGoogle(query) {
+    try {
+        const searchQuery = querystring.stringify({ q: query });
+        const searchURL = `https://www.google.com/search?${searchQuery}`;
+        
+        const response = await axios.get(searchURL, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        const $ = cheerio.load(response.data);
+        const urls = [];
+        
+        $('a').each((i, element) => {
+            const href = $(element).attr('href');
+            if (href && href.startsWith('/url?q=')) {
+                const url = new URL(href.substring(7), 'https://www.google.com').href;
+                urls.push(url);
+            }
+        });
+
+        return urls.slice(0, 3); // Limit to 3 results
+    } catch (error) {
+        console.error("Error searching Google:", error);
+        return [];
+    }
+}
+
+// Function to fetch and generate an article based on a query
+async function fetchAndGenerateArticle(query) {
+    try {
+        // Search Google for relevant URLs
+        const urls = await searchGoogle(query);
+        const articleContent = await scrapeAndSummarize(urls);
+        return articleContent;
+    } catch (error) {
+        console.error("Error fetching or generating article:", error);
+        return "Sorry, I couldn't generate an article at this time.";
+    }
+}
+
+// Function to scrape and summarize content from URLs
+async function scrapeAndSummarize(urls) {
+    let fullText = "";
+    for (const url of urls) {
+        try {
+            const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+            const $ = cheerio.load(response.data);
+            const text = $('body').text(); // Extract all text from the body
+            fullText += text + " ";
+        } catch (error) {
+            console.error("Error scraping URL:", url, error);
+        }
+    }
+
+    // Generate a summary or article from the combined text
+    return summarizeText(fullText);
+}
+
+// Function to summarize text (basic implementation)
+function summarizeText(text) {
+    const lines = text.split('\n').filter(line => line.trim().length > 0);
+    return lines.slice(0, 20).join('\n'); // Return the first 20 lines
 }
 
 // Function to generate contextual responses
@@ -79,7 +154,6 @@ function generateContextualResponse(message) {
 
 // Function to get contextual information (placeholder)
 function getContextualInformation(type, topic) {
-    // Replace this with actual logic or data retrieval
     const responses = {
         who: `The person or entity you're asking about is ${topic}.`,
         when: `The time or date related to ${topic} is not available in my records.`,
@@ -96,31 +170,24 @@ function generateNameBasedResponse(message) {
     const match = message.match(nameRegex);
     if (match && match[1]) {
         const name = match[1];
-        return getNameInfo(name);
+        return `The name of ${name} is ${getNameInfo(name)}.`;
     }
     return null;
 }
 
 // Function to get name information (placeholder)
 function getNameInfo(name) {
-    // Replace this with actual logic or data retrieval
-    // Example: Return name-specific info if available
-    const nameData = {
-        "hamza": "Hamza Ali Ghalib is a developer known for his work on various tech projects.",
-        "nodejs": "Node.js is a runtime environment that allows you to run JavaScript code outside the browser."
-    };
-
-    return nameData[name.toLowerCase()] || `I don't have specific information about ${name}.`;
+    return "ChatBot"; // Example response
 }
 
 // Route for chat messages
-app.get("/chat", (req, res) => {
+app.get("/chat", async (req, res) => {
     const userMessage = req.query.message;
     if (!userMessage) {
         return res.status(400).send("Message query parameter is required");
     }
 
-    const response = generateResponse(userMessage);
+    const response = await generateResponse(userMessage);
     res.send(response);
 });
 
