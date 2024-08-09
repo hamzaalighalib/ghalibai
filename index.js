@@ -1,173 +1,124 @@
 const express = require("express");
-const natural = require("natural");
 const cors = require("cors");
-const pos = require("pos");
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
-const data = require("./hamza.json");
-const OpenAI = require("openai");
+const natural = require("natural");
 
+// Create Express application
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const openai = new OpenAI({
-    apiKey: "sk-proj-QcTM6rJboHHw1v75daJPT3BlbkFJlPPvToPphodkBzfrlkY2",
-});
-
+// Middleware
 app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
 
-app.get("/chat", async (req, res) => {
-    const userMessage = req.query.message.toLowerCase();
-    let response = await generateResponse(userMessage);
+// Load data from JSON file
+const dataFilePath = path.join(__dirname, "hamza.json");
+const data = JSON.parse(fs.readFileSync(dataFilePath, "utf8"));
 
-    const mathExpression = containsMathExpression(userMessage);
-    if (mathExpression) {
-        const calculationResult = evaluateMathExpression(mathExpression);
-        response += ` Your result: ${calculationResult}`;
+// NLP setup
+const tokenizer = new natural.WordTokenizer();
+const stemmer = natural.PorterStemmer;
+
+// Helper function to process text
+function processText(text) {
+    const tokens = tokenizer.tokenize(text.toLowerCase());
+    return tokens.map(token => stemmer.stem(token)).join(" ");
+}
+
+// Function to generate response based on message
+function generateResponse(userMessage) {
+    const processedMessage = processText(userMessage);
+
+    // Check for contextual responses
+    const contextResponse = generateContextualResponse(userMessage);
+    if (contextResponse) {
+        return contextResponse;
     }
 
-    if (userMessage.includes("oh") || userMessage.includes("oops")) {
-        response += " " + generateRandomInterjectionResponse();
+    // Check for name-based responses
+    const nameResponse = generateNameBasedResponse(userMessage);
+    if (nameResponse) {
+        return nameResponse;
     }
 
-    if (isGreeting(userMessage)) {
-        response += " " + generateRandomGreetingResponse();
+    // Find a matching answer from the JSON data
+    for (const item of data.data) {
+        const processedQuestion = processText(item.question);
+        if (processedQuestion.includes(processedMessage)) {
+            const randomIndex = Math.floor(Math.random() * item.answers.length);
+            return item.answers[randomIndex];
+        }
     }
-
-    if (isInformation(userMessage)) {
-        const informationSentences = extractInformation(userMessage);
-        saveInformationToJSON(userMessage, informationSentences);
-        response += ` I think you may know about ${informationSentences.join(" ")}. Please provide me more information about this, so I can remember it for next time.`;
-    }
-
-    res.send(response);
-});
-
-async function generateResponse(userMessage) {
-    const matchedAnswer = findMatchingAnswer(userMessage);
-    if (matchedAnswer) {
-        return matchedAnswer;
-    }
-
-    try {
-        const chatCompletion = await openai.chat.completions.create({
-            messages: [{ role: "user", content: userMessage }],
-            model: "gpt-4",
-        });
-
-        const aiResponse = chatCompletion.choices[0].message.content.trim();
-        return aiResponse;
-    } catch (error) {
-        console.error("Error fetching response from OpenAI:", error);
-        return "Sorry, I couldn't fetch a response at this time.";
-    }
+    
+    // Default response if no match is found
+    return "I'm not sure how to respond to that. Can you please rephrase?";
 }
 
-function containsMathExpression(message) {
-    const mathRegex = /(?:\s|^)(\d+(?:\.\d+)?(?:[\+\-\*\/\^]\d+(?:\.\d+)?)+)(?:\s|$)/g;
-    const matches = message.match(mathRegex);
-    return matches ? matches[0].trim() : null;
-}
-
-function evaluateMathExpression(expression) {
-    try {
-        const result = eval(expression);
-        return result;
-    } catch (error) {
-        console.error("Error evaluating math expression:", error);
-        return "Sorry, I couldn't evaluate that expression.";
-    }
-}
-
-function generateRandomInterjectionResponse() {
-    const interjections = [
-        "Nice!",
-        "Cool!",
-        "Awesome!",
-        "Sweet!",
-        "Great!",
-        "Fantastic!",
-        "Amazing!",
-        "Wow!",
-        "Of course!",
-    ];
-    return interjections[Math.floor(Math.random() * interjections.length)];
-}
-
-function generateRandomGreetingResponse() {
-    const greetings = [
-        "Hello!",
-        "Hi there!",
-        "Hey!",
-        "Greetings!",
-        "What's up?",
-        "Howdy!",
-        "Thanks for appropriating us",
-    ];
-    return greetings[Math.floor(Math.random() * greetings.length)];
-}
-
-function isGreeting(userMessage) {
-    const greetings = ["hello", "hi", "hey", "greetings", "what's up", "howdy", "thanks"];
-    return greetings.includes(userMessage.toLowerCase());
-}
-
-function isInformation(userMessage) {
-    return userMessage.includes("information");
-}
-
-function extractInformation(userMessage) {
-    const sentences = userMessage.split(/[.!?]/);
-    return sentences.filter((sentence) => sentence.toLowerCase().includes("information"));
-}
-
-function escapeHTML(html) {
-    return html.replace(/&/g, '&amp;')
-               .replace(/</g, '&lt;')
-               .replace(/>/g, '&gt;')
-               .replace(/"/g, '&quot;')
-               .replace(/'/g, '&#39;');
-}
-
-function saveInformationToJSON(uq, informationSentences) {
-    const combinedHTML = informationSentences.join(" ");
-    const escapedHTML = escapeHTML(combinedHTML);
-
-    const newData = {
-        question: uq + " " + escapedHTML.trim(),
-        answer: escapedHTML.trim(),
+// Function to generate contextual responses
+function generateContextualResponse(message) {
+    const questionPatterns = {
+        who: /who\s+is\s+(\w+)/i,
+        when: /when\s+was\s+(\w+)/i,
+        how: /how\s+do\s+you\s+(\w+)/i,
+        what: /what\s+is\s+(\w+)/i,
+        where: /where\s+is\s+(\w+)/i
     };
 
-    data.data.push(newData);
-    fs.writeFileSync("./hamza.json", JSON.stringify(data, null, 2));
-}
-
-function findMatchingAnswer(userMessage) {
-    const lowerCaseMessage = userMessage.toLowerCase();
-
-    for (const item of data.data) {
-        const lowerCaseQuestion = item.question.toLowerCase();
-
-        if (lowerCaseQuestion.includes(lowerCaseMessage)) {
-            console.log("Question found:", item.question);
-            console.log("Answer type:", Array.isArray(item.answers) ? "Array" : typeof item.answers);
-
-            if (Array.isArray(item.answers)) {
-                const randomIndex = Math.floor(Math.random() * item.answers.length);
-                console.log("Random index selected:", randomIndex);
-                return item.answers[randomIndex];
-            } else {
-                return item.answers;
-            }
+    for (const [key, regex] of Object.entries(questionPatterns)) {
+        const match = message.match(regex);
+        if (match && match[1]) {
+            const topic = match[1];
+            return getContextualInformation(key, topic);
         }
     }
 
-    console.log("No matching question found for:", userMessage);
     return null;
 }
 
+// Function to get contextual information (placeholder)
+function getContextualInformation(type, topic) {
+    // Replace this with actual logic or data retrieval
+    const responses = {
+        who: `The person or entity you're asking about is ${topic}.`,
+        when: `The time or date related to ${topic} is not available in my records.`,
+        how: `To perform the action related to ${topic}, follow these steps: ...`,
+        what: `The information about ${topic} is not available at the moment.`,
+        where: `The location related to ${topic} is not provided in the data.`
+    };
+    return responses[type] || "I don't have information on that topic.";
+}
+
+// Function to generate name-based responses
+function generateNameBasedResponse(message) {
+    const nameRegex = /\b(?:the name of|what is|who is)\s+(\w+)\b/i;
+    const match = message.match(nameRegex);
+    if (match && match[1]) {
+        const name = match[1];
+        return `The name of ${name} is ${getNameInfo(name)}.`;
+    }
+    return null;
+}
+
+// Function to get name information (placeholder)
+function getNameInfo(name) {
+    // Replace this with actual logic or data retrieval
+    return "ChatBot"; // Example response
+}
+
+// Route for chat messages
+app.get("/chat", (req, res) => {
+    const userMessage = req.query.message;
+    if (!userMessage) {
+        return res.status(400).send("Message query parameter is required");
+    }
+
+    const response = generateResponse(userMessage);
+    res.send(response);
+});
+
+// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
