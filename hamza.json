@@ -1,107 +1,107 @@
 {
   "data": [
-  {
-    "question": "Can you provide an example of JavaScript code?",
-    "answers": [
-      "<code>// Example JavaScript code\nfunction greet() {\n    console.log('Hello, world!');\n}\ngreet();</code>"
-    ]
-  },
-  {
-    "question": "Show me a CSS code snippet.",
-    "answers": [
-      "<code>/* Example CSS code */\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f0f0f0;\n}</code>"
-    ]
-  },
-  {
-    "question": "Please provide a PHP code example.",
-    "answers": [
-      "<code><?php\n// Example PHP code\n$greeting = 'Hello, world!';\necho $greeting;\n?></code>"
-    ]
-  },
-  {
-    "question": "What is a variable in JavaScript?",
-    "answers": [
-      "<code>// JavaScript variable example\nvar x = 10;\nvar message = 'Hello, world!';</code>"
-    ]
-  },
-  {
-    "question": "How can I style a button in CSS?",
-    "answers": [
-      "<code>/* CSS button styling example */\nbutton {\n    background-color: #4CAF50;\n    border: none;\n    color: white;\n    padding: 15px 32px;\n    text-align: center;\n    text-decoration: none;\n    display: inline-block;\n    font-size: 16px;\n    margin: 4px 2px;\n    cursor: pointer;\n}</code>"
-    ]
-  },
-  {
-    "question": "Show me how to define a function in PHP.",
-    "answers": [
-      "<code><?php\n// PHP function definition example\nfunction greet() {\n    echo 'Hello, world!';\n}\ngreet();\n?></code>"
-    ]
-  },
-  {
-    "question": "What is a loop in JavaScript?",
-    "answers": [
-      "<code>// JavaScript loop example\nfor (var i = 0; i < 5; i++) {\n    console.log('Iteration ' + (i + 1));\n}</code>"
-    ]
-  },
-  {
-    "question": "How do I center align text in CSS?",
-    "answers": [
-      "<code>/* CSS text center alignment example */\ndiv {\n    text-align: center;\n}</code>"
-    ]
-  },
-  {
-    "question": "Show me how to connect to a MySQL database using PHP.",
-    "answers": [
-      "<code><?php\n// PHP MySQL connection example\n$servername = 'localhost';\n$username = 'username';\n$password = 'password';\n\n// Create connection\n$conn = new mysqli($servername, $username, $password);\n\n// Check connection\nif ($conn->connect_error) {\n    die('Connection failed: ' . $conn->connect_error);\n}\necho 'Connected successfully';\n?></code>"
-    ]
-  },
-  {
-    "question": "What is an array in JavaScript?",
-    "answers": [
-      "<code>// JavaScript array example\nvar fruits = ['Apple', 'Banana', 'Orange'];\nconsole.log(fruits[0]); // Output: Apple</code>"
-    ]
-  },
-  {
-    "question": "How can I style a div with a border in CSS?",
-    "answers": [
-      "<code>/* CSS div with border example */\ndiv {\n    border: 1px solid #000;\n    padding: 10px;\n}</code>"
-    ]
-  },
-  {
-    "question": "Please provide an example of error handling in PHP.",
-    "answers": [
-      "<code><?php\n// PHP error handling example\nfunction customError($errno, $errstr) {\n    echo '<b>Error:</b> ' . $errstr;\n}\nset_error_handler('customError');\n\n// Trigger error\necho($test);\n?></code>"
-    ]
-  },
-  {
-    "question": "What is a conditional statement in JavaScript?",
-    "answers": [
-      "<code>// JavaScript conditional statement example\nvar age = 20;\nif (age >= 18) {\n    console.log('You are an adult.');\n} else {\n    console.log('You are a minor.');\n}</code>"
-    ]
-  },
-  {
-    "question": "How can I add padding to a paragraph in CSS?",
-    "answers": [
-      "<code>/* CSS paragraph padding example */\np {\n    padding: 20px;\n}</code>"
-    ]
-  },
-  {
-    "question": "Show me how to create a session in PHP.",
-    "answers": [
-      "<code><?php\n// PHP session creation example\nsession_start();\n$_SESSION['username'] = 'john_doe';\necho 'Session created successfully';\n?></code>"
-    ]
-  },
-  {
-    "question": "What is an object in JavaScript?",
-    "answers": [
-      "<code>// JavaScript object example\nvar person = {\n    firstName: 'John',\n    lastName: 'Doe',\n    age: 30\n};\nconsole.log(person.firstName); // Output: John</code>"
-    ]
-  },
-  {
-    "question": "How do I change the background color of a div in CSS?",
-    "answers": [
-      "<code>/* CSS div background color example */\ndiv {\n    background-color: #f0f0f0;\n}</code>"
-    ]
-  },
+    {
+      "question": "Can you provide an example of JavaScript code?",
+      "answers": [
+        "```javascript\n// Example JavaScript code\nfunction greet() {\n    console.log('Hello, world!');\n}\ngreet();\n```"
+      ]
+    },
+    {
+      "question": "Show me a CSS code snippet.",
+      "answers": [
+        "```css\n/* Example CSS code */\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f0f0f0;\n}\n```"
+      ]
+    },
+    {
+      "question": "Please provide a PHP code example.",
+      "answers": [
+        "```php\n<?php\n// Example PHP code\n$greeting = 'Hello, world!';\necho $greeting;\n?>\n```"
+      ]
+    },
+    {
+      "question": "What is a variable in JavaScript?",
+      "answers": [
+        "```javascript\n// JavaScript variable example\nvar x = 10;\nvar message = 'Hello, world!';\n```"
+      ]
+    },
+    {
+      "question": "How can I style a button in CSS?",
+      "answers": [
+        "```css\n/* CSS button styling example */\nbutton {\n    background-color: #4CAF50;\n    border: none;\n    color: white;\n    padding: 15px 32px;\n    text-align: center;\n    text-decoration: none;\n    display: inline-block;\n    font-size: 16px;\n    margin: 4px 2px;\n    cursor: pointer;\n}\n```"
+      ]
+    },
+    {
+      "question": "Show me how to define a function in PHP.",
+      "answers": [
+        "```php\n<?php\n// PHP function definition example\nfunction greet() {\n    echo 'Hello, world!';\n}\ngreet();\n?>\n```"
+      ]
+    },
+    {
+      "question": "What is a loop in JavaScript?",
+      "answers": [
+        "```javascript\n// JavaScript loop example\nfor (var i = 0; i < 5; i++) {\n    console.log('Iteration ' + (i + 1));\n}\n```"
+      ]
+    },
+    {
+      "question": "How do I center align text in CSS?",
+      "answers": [
+        "```css\n/* CSS text center alignment example */\ndiv {\n    text-align: center;\n}\n```"
+      ]
+    },
+    {
+      "question": "Show me how to connect to a MySQL database using PHP.",
+      "answers": [
+        "```php\n<?php\n// PHP MySQL connection example\n$servername = 'localhost';\n$username = 'username';\n$password = 'password';\n\n// Create connection\n$conn = new mysqli($servername, $username, $password);\n\n// Check connection\nif ($conn->connect_error) {\n    die('Connection failed: ' . $conn->connect_error);\n}\necho 'Connected successfully';\n?>\n```"
+      ]
+    },
+    {
+      "question": "What is an array in JavaScript?",
+      "answers": [
+        "```javascript\n// JavaScript array example\nvar fruits = ['Apple', 'Banana', 'Orange'];\nconsole.log(fruits[0]); // Output: Apple\n```"
+      ]
+    },
+    {
+      "question": "How can I style a div with a border in CSS?",
+      "answers": [
+        "```css\n/* CSS div with border example */\ndiv {\n    border: 1px solid #000;\n    padding: 10px;\n}\n```"
+      ]
+    },
+    {
+      "question": "Please provide an example of error handling in PHP.",
+      "answers": [
+        "```php\n<?php\n// PHP error handling example\nfunction customError($errno, $errstr) {\n    echo '<b>Error:</b> ' . $errstr;\n}\nset_error_handler('customError');\n\n// Trigger error\necho($test);\n?>\n```"
+      ]
+    },
+    {
+      "question": "What is a conditional statement in JavaScript?",
+      "answers": [
+        "```javascript\n// JavaScript conditional statement example\nvar age = 20;\nif (age >= 18) {\n    console.log('You are an adult.');\n} else {\n    console.log('You are a minor.');\n}\n```"
+      ]
+    },
+    {
+      "question": "How can I add padding to a paragraph in CSS?",
+      "answers": [
+        "```css\n/* CSS paragraph padding example */\np {\n    padding: 20px;\n}\n```"
+      ]
+    },
+    {
+      "question": "Show me how to create a session in PHP.",
+      "answers": [
+        "```php\n<?php\n// PHP session creation example\nsession_start();\n$_SESSION['username'] = 'john_doe';\necho 'Session created successfully';\n?>\n```"
+      ]
+    },
+    {
+      "question": "What is an object in JavaScript?",
+      "answers": [
+        "```javascript\n// JavaScript object example\nvar person = {\n    firstName: 'John',\n    lastName: 'Doe',\n    age: 30\n};\nconsole.log(person.firstName); // Output: John\n```"
+      ]
+    },
+    {
+      "question": "How do I change the background color of a div in CSS?",
+      "answers": [
+        "```css\n/* CSS div background color example */\ndiv {\n    background-color: #f0f0f0;\n}\n```"
+      ]
+    },
   {
     "question": "Please provide an example of file handling in PHP.",
     "answers": [
