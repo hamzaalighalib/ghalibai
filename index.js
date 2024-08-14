@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "public")));
 
 // Load dataset
-const dataFilePath = path.join(__dirname, "data.json");
+const dataFilePath = path.join(__dirname, "hamza.json");
 let qaData = [];
 
 try {
