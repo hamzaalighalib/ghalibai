@@ -4,9 +4,8 @@ const compromise = require("compromise");
 const natural = require("natural");
 const fs = require("fs");
 const path = require("path");
-const fetch = require("node-fetch");
-const cheerio = require("cheerio");
 const math = require("mathjs");
+const cheerio = require("cheerio");
 
 // Initialize Express
 const app = express();
@@ -73,34 +72,20 @@ function calculateSimilarity(text1, text2, tags1, tags2) {
     return (intersection / union) + tagScore;
 }
 
-// Generate a custom response based on predefined templates
+// Generate a response with grammar-based variations
 function generateResponse(answers) {
     if (answers.length === 0) return ["Oops, I don't have an answer for that."];
 
-    // Define response templates
-    const positiveTemplates = [
-        "Here is some information: {answer}. I hope this helps!",
-        "You might find this useful: {answer}. Let me know if you need more details.",
-        "Here's what I found: {answer}. Feel free to ask more questions!"
+    // Create a simple text generation response
+    const responses = [
+        "Here's what I found:",
+        "Take a look at this:",
+        "I hope this helps:",
+        "Check this out:"
     ];
+    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
 
-    const negativeTemplates = [
-        "Oh no, I couldn't find anything relevant.",
-        "Sorry, but I don't have any information on that.",
-        "Unfortunately, I don't have an answer for that right now."
-    ];
-
-    // Choose a response template based on the number of answers
-    let template;
-    if (answers.length > 0) {
-        template = positiveTemplates[Math.floor(Math.random() * positiveTemplates.length)];
-    } else {
-        template = negativeTemplates[Math.floor(Math.random() * negativeTemplates.length)];
-    }
-
-    // Fill in the placeholder with a random answer
-    const answer = answers.length > 0 ? answers[Math.floor(Math.random() * answers.length)] : "";
-    return [template.replace("{answer}", answer)];
+    return [`${randomResponse} ${answers.join(" ")}`];
 }
 
 // Find the best answer
@@ -138,6 +123,7 @@ function evaluateMathExpression(text) {
 async function searchGoogle(query) {
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     try {
+        const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
         const response = await fetch(searchUrl);
         const body = await response.text();
         const $ = cheerio.load(body);
@@ -164,6 +150,7 @@ async function fetchAndProcessContent(links) {
     let content = [];
     for (const link of links) {
         try {
+            const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
             const response = await fetch(link);
             const body = await response.text();
             const $ = cheerio.load(body);
