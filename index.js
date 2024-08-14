@@ -1,183 +1,178 @@
 const express = require("express");
 const cors = require("cors");
+const compromise = require("compromise");
+const natural = require("natural");
 const fs = require("fs");
 const path = require("path");
-const natural = require("natural");
-const axios = require("axios");
+const fetch = require("node-fetch");
 const cheerio = require("cheerio");
-const querystring = require("querystring");
+const math = require("mathjs");
 
-// Create Express application
+// Initialize Express
 const app = express();
+app.use(cors());
+app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, "public")));
-app.use(express.json());
 
-// Load data from JSON file
-const dataFilePath = path.join(__dirname, "hamza.json");
-const data = JSON.parse(fs.readFileSync(dataFilePath, "utf8"));
+// Load dataset
+const dataFilePath = path.join(__dirname, "data.json");
+let qaData = [];
 
-// NLP setup
+try {
+    const fileData = fs.readFileSync(dataFilePath, "utf8");
+    const jsonData = JSON.parse(fileData);
+
+    if (jsonData.data && Array.isArray(jsonData.data)) {
+        qaData = jsonData.data;
+    } else {
+        throw new Error("Data is not an array under the 'data' key");
+    }
+} catch (error) {
+    console.error("Error loading or parsing data.json:", error.message);
+}
+
+// Initialize NLP tools
 const tokenizer = new natural.WordTokenizer();
 const stemmer = natural.PorterStemmer;
 
-// Helper function to process text
-function processText(text) {
-    const tokens = tokenizer.tokenize(text.toLowerCase());
-    return tokens.map(token => stemmer.stem(token)).join(" ");
-}
-
-// Function to generate response based on message
-async function generateResponse(userMessage) {
-    const processedMessage = processText(userMessage);
-
-    // Check for contextual responses
-    const contextResponse = generateContextualResponse(userMessage);
-    if (contextResponse) {
-        return contextResponse;
-    }
-
-    // Check for name-based responses
-    const nameResponse = generateNameBasedResponse(userMessage);
-    if (nameResponse) {
-        return nameResponse;
-    }
-
-    // Check for information queries and fetch data
-    if (isInformationQuery(userMessage)) {
-        return await fetchAndGenerateArticle(userMessage);
-    }
-
-    // Find a matching answer from the JSON data
-    for (const item of data.data) {
-        const processedQuestion = processText(item.question);
-        if (processedQuestion.includes(processedMessage)) {
-            const randomIndex = Math.floor(Math.random() * item.answers.length);
-            return item.answers[randomIndex];
+// Preprocess text with POS tags
+function preprocessText(text) {
+    let doc = compromise(text);
+    return {
+        text: doc.text().toLowerCase(),
+        tags: {
+            nouns: doc.nouns().out('array'),
+            pronouns: doc.pronouns().out('array'),
+            verbs: doc.verbs().out('array')
         }
+    };
+}
+
+// Calculate similarity based on text and POS tags
+function calculateSimilarity(text1, text2, tags1, tags2) {
+    const words1 = new Set(text1.split(" "));
+    const words2 = new Set(text2.split(" "));
+    const intersection = [...words1].filter(word => words2.has(word)).length;
+    const union = new Set([...words1, ...words2]).size;
+
+    // Enhance similarity score based on POS tags
+    let tagScore = 0;
+    tags1.nouns.forEach(noun => {
+        if (tags2.nouns.includes(noun)) tagScore += 0.2;
+    });
+    tags1.verbs.forEach(verb => {
+        if (tags2.verbs.includes(verb)) tagScore += 0.2;
+    });
+    tags1.pronouns.forEach(pronoun => {
+        if (tags2.pronouns.includes(pronoun)) tagScore += 0.1;
+    });
+
+    return (intersection / union) + tagScore;
+}
+
+// Generate a custom response based on predefined templates
+function generateResponse(answers) {
+    if (answers.length === 0) return ["Oops, I don't have an answer for that."];
+
+    // Define response templates
+    const positiveTemplates = [
+        "Here is some information: {answer}. I hope this helps!",
+        "You might find this useful: {answer}. Let me know if you need more details.",
+        "Here's what I found: {answer}. Feel free to ask more questions!"
+    ];
+
+    const negativeTemplates = [
+        "Oh no, I couldn't find anything relevant.",
+        "Sorry, but I don't have any information on that.",
+        "Unfortunately, I don't have an answer for that right now."
+    ];
+
+    // Choose a response template based on the number of answers
+    let template;
+    if (answers.length > 0) {
+        template = positiveTemplates[Math.floor(Math.random() * positiveTemplates.length)];
+    } else {
+        template = negativeTemplates[Math.floor(Math.random() * negativeTemplates.length)];
     }
-    
-    // Default response if no match is found
-    return "I'm not sure how to respond to that. Can you please rephrase?";
+
+    // Fill in the placeholder with a random answer
+    const answer = answers.length > 0 ? answers[Math.floor(Math.random() * answers.length)] : "";
+    return [template.replace("{answer}", answer)];
 }
 
-// Function to check if the query is asking for information
-function isInformationQuery(message) {
-    return /information|details|facts|about/i.test(message);
+// Find the best answer
+function findBestAnswer(question) {
+    const { text: processedQuestion, tags: questionTags } = preprocessText(question);
+
+    let bestMatch = null;
+    let highestScore = 0;
+
+    qaData.forEach(item => {
+        if (item.question && item.answers) {
+            const { text: processedItemQuestion, tags: itemTags } = preprocessText(item.question);
+            const score = calculateSimilarity(processedQuestion, processedItemQuestion, questionTags, itemTags);
+
+            if (score > highestScore) {
+                highestScore = score;
+                bestMatch = item.answers; // Return all answers
+            }
+        }
+    });
+
+    return bestMatch && bestMatch.length > 0 ? generateResponse(bestMatch) : generateResponse([]);
 }
 
-// Function to search Google for URLs (using scraping)
-async function searchGoogle(query) {
+// Evaluate mathematical expressions
+function evaluateMathExpression(text) {
     try {
-        const searchQuery = querystring.stringify({ q: query });
-        const searchURL = `https://www.google.com/search?${searchQuery}`;
-        
-        const response = await axios.get(searchURL, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-        const $ = cheerio.load(response.data);
-        const urls = [];
-        
-        $('a').each((i, element) => {
-            const href = $(element).attr('href');
-            if (href && href.startsWith('/url?q=')) {
-                const url = new URL(href.substring(7), 'https://www.google.com').href;
-                urls.push(url);
+        return math.evaluate(text).toString();
+    } catch (error) {
+        return null;
+    }
+}
+
+// Search Google and scrape content
+async function searchGoogle(query) {
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    try {
+        const response = await fetch(searchUrl);
+        const body = await response.text();
+        const $ = cheerio.load(body);
+
+        let links = [];
+        $('a').each((index, element) => {
+            if (index < 5) { // Scrape 5 links
+                const href = $(element).attr('href');
+                if (href && href.startsWith('/url?q=')) {
+                    links.push(decodeURIComponent(href.split('/url?q=')[1].split('&')[0]));
+                }
             }
         });
 
-        return urls.slice(0, 3); // Limit to 3 results
+        return links;
     } catch (error) {
-        console.error("Error searching Google:", error);
+        console.error("Error fetching search results:", error.message);
         return [];
     }
 }
 
-// Function to fetch and generate an article based on a query
-async function fetchAndGenerateArticle(query) {
-    try {
-        // Search Google for relevant URLs
-        const urls = await searchGoogle(query);
-        const articleContent = await scrapeAndSummarize(urls);
-        return articleContent;
-    } catch (error) {
-        console.error("Error fetching or generating article:", error);
-        return "Sorry, I couldn't generate an article at this time.";
-    }
-}
-
-// Function to scrape and summarize content from URLs
-async function scrapeAndSummarize(urls) {
-    let fullText = "";
-    for (const url of urls) {
+// Fetch and process content from links
+async function fetchAndProcessContent(links) {
+    let content = [];
+    for (const link of links) {
         try {
-            const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-            const $ = cheerio.load(response.data);
-            const text = $('body').text(); // Extract all text from the body
-            fullText += text + " ";
+            const response = await fetch(link);
+            const body = await response.text();
+            const $ = cheerio.load(body);
+            content.push($('body').text().slice(0, 500)); // Extract first 500 characters
         } catch (error) {
-            console.error("Error scraping URL:", url, error);
+            console.error("Error fetching or processing link:", error.message);
         }
     }
-
-    // Generate a summary or article from the combined text
-    return summarizeText(fullText);
-}
-
-// Function to summarize text (basic implementation)
-function summarizeText(text) {
-    const lines = text.split('\n').filter(line => line.trim().length > 0);
-    return lines.slice(0, 20).join('\n'); // Return the first 20 lines
-}
-
-// Function to generate contextual responses
-function generateContextualResponse(message) {
-    const questionPatterns = {
-        who: /who\s+is\s+(\w+)/i,
-        when: /when\s+was\s+(\w+)/i,
-        how: /how\s+do\s+you\s+(\w+)/i,
-        what: /what\s+is\s+(\w+)/i,
-        where: /where\s+is\s+(\w+)/i
-    };
-
-    for (const [key, regex] of Object.entries(questionPatterns)) {
-        const match = message.match(regex);
-        if (match && match[1]) {
-            const topic = match[1];
-            return getContextualInformation(key, topic);
-        }
-    }
-
-    return null;
-}
-
-// Function to get contextual information (placeholder)
-function getContextualInformation(type, topic) {
-    const responses = {
-        who: `The person or entity you're asking about is ${topic}.`,
-        when: `The time or date related to ${topic} is not available in my records.`,
-        how: `To perform the action related to ${topic}, follow these steps: ...`,
-        what: `The information about ${topic} is not available at the moment.`,
-        where: `The location related to ${topic} is not provided in the data.`
-    };
-    return responses[type] || "I don't have information on that topic.";
-}
-
-// Function to generate name-based responses
-function generateNameBasedResponse(message) {
-    const nameRegex = /\b(?:the name of|what is|who is)\s+(\w+)\b/i;
-    const match = message.match(nameRegex);
-    if (match && match[1]) {
-        const name = match[1];
-        return `The name of ${name} is ${getNameInfo(name)}.`;
-    }
-    return null;
-}
-
-// Function to get name information (placeholder)
-function getNameInfo(name) {
-    return "ChatBot"; // Example response
+    return content;
 }
 
 // Route for chat messages
@@ -187,7 +182,24 @@ app.get("/chat", async (req, res) => {
         return res.status(400).send("Message query parameter is required");
     }
 
-    const response = await generateResponse(userMessage);
+    let response = findBestAnswer(userMessage);
+
+    if (response.includes("Oops, I don't have an answer for that.")) {
+        const mathResult = evaluateMathExpression(userMessage);
+        if (mathResult) {
+            response = [`Here's the result: ${mathResult}. I hope this helps!`];
+        } else {
+            const searchResults = await searchGoogle(userMessage);
+            const fetchedContent = await fetchAndProcessContent(searchResults);
+
+            if (fetchedContent.length > 0) {
+                response = [`Here's some information I found: ${fetchedContent[0]}`];
+            } else {
+                response = generateResponse([]);
+            }
+        }
+    }
+
     res.send(response);
 });
 
