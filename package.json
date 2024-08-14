@@ -1,22 +1,26 @@
 {
-  "name": "nodejs",
+  "name": "nodejs-nlp",
   "version": "1.0.0",
-  "description": "A chatbot server using natural language processing and web scraping.",
+  "description": "A Node.js application using NLP for grammar-based responses.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["chatbot", "nlp", "natural", "web scraping"],
+  "keywords": [
+    "NLP",
+    "natural language processing",
+    "compromise"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
+    "axios": "^1.7.3",
+    "cheerio": "^1.0.0-rc.12",
+    "compromise": "^14.8.1",
     "cors": "^2.8.5",
-    "natural": "^5.2.0",
-    "fs": "0.0.1-security",
-    "path": "^0.12.7",
-    "axios": "^0.27.2",
-    "cheerio": "^1.0.0-rc.12"
+    "express": "^4.19.2",
+    "mathjs": "^13.0.3",
+    "natural": "^8.0.1",
+    "node-fetch": "^3.2.6"
   }
 }
