@@ -187,7 +187,11 @@ app.get("/chat", async (req, res) => {
         }
     }
 
-    res.send(response);
+    // Convert the response array to a plain text string
+    const responseText = response.join(" ");
+
+    // Send the response as plain text
+    res.send(responseText);
 });
 
 // Start the server
