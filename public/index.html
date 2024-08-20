@@ -74,7 +74,7 @@
 
             // Replace code blocks with formatted HTML and preserve code formatting
             const formattedMessage = message
-                .replace(/```([\s\S]*?)```/g, '<pre class="code-block">$1<button class="copy-btn" onclick="copyToClipboard(this)">Copy</button></pre>');
+                .replace(/```([\s\S]*?)```/g, '<pre class="code-block">$1</pre>');
 
             typeWriter(messageSpan, formattedMessage);
         }
