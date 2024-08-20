@@ -6,13 +6,36 @@
     <title>Chat With Hamza Ali Ghalib Ai</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        /* Add custom styles here */
+        .code-block {
+            background-color: #1e293b; /* Dark background for code */
+            color: #f9fafb; /* Light text color */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            position: relative;
+            overflow: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #2563eb; /* Blue background for button */
+            color: #ffffff; /* White text color */
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background-color: #1d4ed8; /* Darker blue on hover */
+        }
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col justify-end">
-    <div class="fixed text-white text-center top-0 w-full bg-blue-400">visit for best respose <a href="https://danialazam.rf.gd">Click here</a></div>
+    <div class="fixed text-white text-center top-0 w-full bg-blue-400">visit for best response <a href="https://danialazam.rf.gd">Click here</a></div>
 
-    <div id="chat-container" class="max-w-md mx-auto p-2 flex flex-col gap-2"  style="overflow-y: auto;" >
+    <div id="chat-container" class="max-w-md mx-auto p-2 flex flex-col gap-2" style="overflow-y: auto;">
         <h1>Chat With Hamza Ali Ghalib Ai</h1>
         <!-- Chat messages will be appended here -->
     </div>
@@ -30,14 +53,16 @@
         messageForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const userMessage = userInput.value;
-            appendMessage(true,'You', userMessage);
+            appendMessage(true, 'You', userMessage);
             sendMessage(userMessage);
             userInput.value = '';
         });
 
-       function appendMessage(status, sender, message) {
+        function appendMessage(status, sender, message) {
             const messageElement = document.createElement('div');
-            messageElement.className = sender === 'You' ? `p-2 rounded-xl bg-green-100 self-start max-w-md` : `p-2 rounded-xl bg-${status ? 'blue' : 'red'}-100 self-end max-w-md`;
+            messageElement.className = sender === 'You'
+                ? 'p-2 rounded-xl bg-green-100 self-start max-w-md'
+                : 'p-2 rounded-xl bg-' + (status ? 'blue' : 'red') + '-100 self-end max-w-md';
             chatContainer.appendChild(messageElement);
 
             const senderSpan = document.createElement('span');
@@ -47,40 +72,53 @@
             const messageSpan = document.createElement('span');
             messageElement.appendChild(messageSpan);
 
-            let index = 0;
-            let inTag = false; // Flag to track if currently inside an HTML tag
-            const typingInterval = setInterval(() => {
-                if (index < message.length) {
-                    if (message.charAt(index) === '<') {
-                        // If encountering '<', set the inTag flag to true
-                        inTag = true;
-                        const closingBracketIndex = message.indexOf('>', index);
-                        const tag = message.substring(index, closingBracketIndex + 1);
-                        const tagName = tag.match(/<\/?(\w+)\s*[^>]*>/)[1].toLowerCase();
-                        if (['a', 'br', 'hr', 'code', 'img'].includes(tagName)) {
-                            // If the tag is one of the specified tags, append it to the message span
-                            messageSpan.innerHTML += tag;
-                        }
-                        index = closingBracketIndex + 1;
-                    } else if (message.charAt(index) === '>') {
-                        // If encountering '>', set the inTag flag to false
-                        inTag = false;
-                        index++;
-                    } else if (!inTag) {
-                        // If not inside an HTML tag, append the character
-                        messageSpan.textContent += message.charAt(index);
-                        chatContainer.scrollTop = chatContainer.scrollHeight;
-                        index++;
-                    } else {
-                        // If inside an HTML tag, skip the character
-                        index++;
-                    }
-                } else {
-                    clearInterval(typingInterval);
-                }
-            }, 7);
+            // Replace code blocks with formatted HTML and preserve code formatting
+            const formattedMessage = message
+                .replace(/```([\s\S]*?)```/g, '<pre class="code-block">$1<button class="copy-btn" onclick="copyToClipboard(this)">Copy</button></pre>');
+
+            typeWriter(messageSpan, formattedMessage);
         }
 
+        function typeWriter(element, text) {
+            let index = 0;
+            let html = '';
+            const typingInterval = 20; // Adjust typing speed here
+
+            function writeChar() {
+                if (index < text.length) {
+                    if (text[index] === '<') {
+                        // Handle HTML tags
+                        const closingBracketIndex = text.indexOf('>', index);
+                        const tag = text.substring(index, closingBracketIndex + 1);
+                        html += tag;
+                        index = closingBracketIndex + 1;
+                    } else {
+                        html += text[index];
+                        index++;
+                    }
+                    element.innerHTML = html;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    setTimeout(writeChar, typingInterval);
+                }
+            }
+
+            writeChar();
+        }
+
+        function copyToClipboard(button) {
+            const codeBlock = button.previousElementSibling;
+            const range = document.createRange();
+            range.selectNode(codeBlock);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            try {
+                document.execCommand('copy');
+                alert('Code copied to clipboard');
+            } catch (err) {
+                console.error('Failed to copy code', err);
+            }
+            window.getSelection().removeAllRanges();
+        }
 
         function sendMessage(message) {
             fetch(`/chat?message=${encodeURIComponent(message)}`)
@@ -90,8 +128,8 @@
                     }
                     return response.text();
                 })
-                .then(data => appendMessage(true,'Ghalib Ai', data))
-                .catch(error => appendMessage(false,'Ghalib Ai', 'Sorry, there was a problem processing your request. i think you have internet connection problem or server side issues occured!'));
+                .then(data => appendMessage(true, 'Ghalib Ai', data))
+                .catch(error => appendMessage(false, 'Ghalib Ai', 'Sorry, there was a problem processing your request. I think you have an internet connection problem or server-side issues occurred!'));
         }
     </script>
 
