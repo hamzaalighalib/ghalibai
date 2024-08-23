@@ -1,11 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const compromise = require("compromise");
 const natural = require("natural");
 const fs = require("fs");
 const path = require("path");
-const math = require("mathjs");
-const cheerio = require("cheerio");
 
 // Initialize Express
 const app = express();
@@ -13,9 +10,7 @@ app.use(cors());
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, "public")));
-
 // Load dataset
 const dataFilePath = path.join(__dirname, "hamza.json");
 let qaData = [];
@@ -37,161 +32,48 @@ try {
 const tokenizer = new natural.WordTokenizer();
 const stemmer = natural.PorterStemmer;
 
-// Preprocess text with POS tags
-function preprocessText(text) {
-    let doc = compromise(text);
-    return {
-        text: doc.text().toLowerCase(),
-        tags: {
-            nouns: doc.nouns().out('array'),
-            pronouns: doc.pronouns().out('array'),
-            verbs: doc.verbs().out('array')
-        }
-    };
+// Simple similarity function
+function calculateSimilarity(question1, question2) {
+    const tokens1 = tokenizer.tokenize(question1.toLowerCase());
+    const tokens2 = tokenizer.tokenize(question2.toLowerCase());
+    const stemmedTokens1 = tokens1.map(token => stemmer.stem(token));
+    const stemmedTokens2 = tokens2.map(token => stemmer.stem(token));
+    const commonTokens = stemmedTokens1.filter(token => stemmedTokens2.includes(token));
+    return commonTokens.length / stemmedTokens1.length;
 }
 
-// Calculate similarity based on text and POS tags
-function calculateSimilarity(text1, text2, tags1, tags2) {
-    const words1 = new Set(text1.split(" "));
-    const words2 = new Set(text2.split(" "));
-    const intersection = [...words1].filter(word => words2.has(word)).length;
-    const union = new Set([...words1, ...words2]).size;
+// Predict based on input
+function predict(inputText) {
+    let bestMatchIndex = -1;
+    let highestSimilarity = 0;
 
-    // Enhance similarity score based on POS tags
-    let tagScore = 0;
-    tags1.nouns.forEach(noun => {
-        if (tags2.nouns.includes(noun)) tagScore += 0.2;
-    });
-    tags1.verbs.forEach(verb => {
-        if (tags2.verbs.includes(verb)) tagScore += 0.2;
-    });
-    tags1.pronouns.forEach(pronoun => {
-        if (tags2.pronouns.includes(pronoun)) tagScore += 0.1;
-    });
-
-    return (intersection / union) + tagScore;
-}
-
-// Generate a response with grammar-based variations
-function generateResponse(answers) {
-    if (answers.length === 0) return ["Oops, I don't have an answer for that."];
-
-    // Create a simple text generation response
-    const responses = [
-        "Here's what I found:",
-        "Take a look at this:",
-        "I hope this helps:",
-        "Check this out:"
-    ];
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-    return [`${randomResponse} ${answers.join(" ")}`];
-}
-
-// Find the best answer
-function findBestAnswer(question) {
-    const { text: processedQuestion, tags: questionTags } = preprocessText(question);
-
-    let bestMatch = null;
-    let highestScore = 0;
-
-    qaData.forEach(item => {
-        if (item.question && item.answers) {
-            const { text: processedItemQuestion, tags: itemTags } = preprocessText(item.question);
-            const score = calculateSimilarity(processedQuestion, processedItemQuestion, questionTags, itemTags);
-
-            if (score > highestScore) {
-                highestScore = score;
-                bestMatch = item.answers; // Return all answers
-            }
-        }
-    });
-
-    return bestMatch && bestMatch.length > 0 ? generateResponse(bestMatch) : generateResponse([]);
-}
-
-// Evaluate mathematical expressions
-function evaluateMathExpression(text) {
-    try {
-        return math.evaluate(text).toString();
-    } catch (error) {
-        return null;
-    }
-}
-
-// Search Google and scrape content
-async function searchGoogle(query) {
-    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-    try {
-        const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-        const response = await fetch(searchUrl);
-        const body = await response.text();
-        const $ = cheerio.load(body);
-
-        let links = [];
-        $('a').each((index, element) => {
-            if (index < 5) { // Scrape 5 links
-                const href = $(element).attr('href');
-                if (href && href.startsWith('/url?q=')) {
-                    links.push(decodeURIComponent(href.split('/url?q=')[1].split('&')[0]));
-                }
-            }
-        });
-
-        return links;
-    } catch (error) {
-        console.error("Error fetching search results:", error.message);
-        return [];
-    }
-}
-
-// Fetch and process content from links
-async function fetchAndProcessContent(links) {
-    let content = [];
-    for (const link of links) {
-        try {
-            const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-            const response = await fetch(link);
-            const body = await response.text();
-            const $ = cheerio.load(body);
-            content.push($('body').text().slice(0, 500)); // Extract first 500 characters
-        } catch (error) {
-            console.error("Error fetching or processing link:", error.message);
+    for (let i = 0; i < qaData.length; i++) {
+        const similarity = calculateSimilarity(inputText, qaData[i].question);
+        if (similarity > highestSimilarity) {
+            highestSimilarity = similarity;
+            bestMatchIndex = i;
         }
     }
-    return content;
+
+    if (bestMatchIndex !== -1) {
+        const answers = qaData[bestMatchIndex].answers;
+        const randomIndex = Math.floor(Math.random() * answers.length);
+        return answers[randomIndex]; // Return a random answer
+    }
+ else {
+        return "I'm not sure I understand. Can you try asking something else?";
+    }
 }
 
 // Route for chat messages
-app.get("/chat", async (req, res) => {
+app.get("/chat", (req, res) => {
     const userMessage = req.query.message;
     if (!userMessage) {
         return res.status(400).send("Message query parameter is required");
     }
 
-    let response = findBestAnswer(userMessage);
-
-    if (response.includes("Oops, I don't have an answer for that.")) {
-        const mathResult = evaluateMathExpression(userMessage);
-        if (mathResult) {
-            response = [`Here's the result: ${mathResult}. I hope this helps!`];
-        } else {
-            const searchResults = await searchGoogle(userMessage);
-            const fetchedContent = await fetchAndProcessContent(searchResults);
-
-            if (fetchedContent.length > 0) {
-                response = [`Here's some information I found: ${fetchedContent[0]}`];
-            } else {
-                response = generateResponse([]);
-            }
-        }
-    }
-
-    // Convert the response array to a plain text string
-    const responseText = response.join(" ");
-
-    // Send the response as plain text
-    res.send(responseText);
+    const response = predict(userMessage);
+    res.send(response);
 });
 
 // Start the server
