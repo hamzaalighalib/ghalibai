@@ -1,17 +1,22 @@
 {
   "name": "nodejs-nlp",
   "version": "1.0.0",
-  "description": "A Node.js application using NLP for grammar-based responses.",
+  "description": "A Node.js chatbot using NLP for human-like, grammar-aware responses with context management",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "NLP",
     "natural language processing",
-    "compromise"
+    "chatbot",
+    "compromise",
+    "express",
+    "context-aware"
   ],
-  "author": "",
+  "author": "Your Name <your.email@example.com>",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.7.3",
@@ -19,8 +24,14 @@
     "compromise": "^14.8.1",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "express-session": "^1.18.0",
     "mathjs": "^13.0.3",
     "natural": "^8.0.1",
     "node-fetch": "^3.2.6"
+    // Optional: For transformer support (requires Python setup)
+    // "@huggingface/transformers": "^latest"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
   }
 }
