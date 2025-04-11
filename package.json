@@ -28,8 +28,6 @@
     "mathjs": "^13.0.3",
     "natural": "^8.0.1",
     "node-fetch": "^3.2.6"
-    // Optional: For transformer support (requires Python setup)
-    // "@huggingface/transformers": "^latest"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
