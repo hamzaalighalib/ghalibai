@@ -202,6 +202,5 @@ app.get("/chat", (req, res) => {
 
 // Start server
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// EXPORT FOR VERCEL
+module.exports = app;
