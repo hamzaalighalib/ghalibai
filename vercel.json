@@ -1,7 +1,7 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/chat", "destination": "index.js" },
-    { "source": "/(.*)", "destination": "/$1" }
+    { "source": "/chat", "destination": "/index.js" },
+    { "source": "/(.*)", "destination": "/index.js" }
   ]
 }
