@@ -8,25 +8,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const dataFilePath = path.join(__dirname, "hamza.json");
 const tokenizer = new natural.WordTokenizer();
+const dataFilePath = path.join(__dirname, "hamza.json");
 
 let generativeBrain = {};
 let isTrained = false;
 
-// --- INTELLIGENT TRAINING ---
+// --- HUMAN-LIKE TRAINING ---
 function train() {
     if (isTrained) return;
     try {
         if (fs.existsSync(dataFilePath)) {
-            const fileData = fs.readFileSync(dataFilePath, "utf8");
-            const qaData = JSON.parse(fileData).data || [];
-            
+            const qaData = JSON.parse(fs.readFileSync(dataFilePath, "utf8")).data || [];
             generativeBrain = {}; 
             qaData.forEach(item => {
                 const text = (item.question + " " + item.answers.join(" ")).toLowerCase();
                 const tokens = tokenizer.tokenize(text);
-                
                 if (tokens) {
                     for (let i = 0; i < tokens.length - 1; i++) {
                         const curr = tokens[i];
@@ -37,52 +34,41 @@ function train() {
                 }
             });
             isTrained = true;
+            console.log("🧠 Brain Ready");
         }
-    } catch (e) { console.error("Training issue: ", e.message); }
+    } catch (e) { console.log("Training Error"); }
 }
 
-// --- GENERATION ENGINE ---
-function generate(input) {
-    const tokens = tokenizer.tokenize(input.toLowerCase());
-    if (!tokens || tokens.length === 0) return "I am listening...";
+// --- API ROUTE (MUST BE FIRST) ---
+app.get("/chat", (req, res) => {
+    train(); 
+    const msg = req.query.message || "";
+    if (!msg) return res.json({ reply: "I am ready, Hamza!" });
+
+    const tokens = tokenizer.tokenize(msg.toLowerCase());
+    if (!tokens || tokens.length === 0) return res.json({ reply: "Tell me more!" });
 
     let current = tokens[tokens.length - 1];
     let result = [current];
 
+    // Generative Loop (Markov Chain)
     for (let i = 0; i < 12; i++) {
         const choices = generativeBrain[current];
         if (!choices) break;
-
-        // Pick a choice based on what the AI learned
-        const nextWord = choices[Math.floor(Math.random() * choices.length)];
-        result.push(nextWord);
-        current = nextWord;
-        if (["thanks", "bye", "."].includes(current)) break;
+        const next = choices[Math.floor(Math.random() * choices.length)];
+        result.push(next);
+        current = next;
     }
     
-    let sentence = result.join(" ");
-    return sentence.charAt(0).toUpperCase() + sentence.slice(1);
-}
-
-// --- ROUTES ---
-
-// 1. API Route First
-app.get("/chat", (req, res) => {
-    train(); 
-    const msg = req.query.message || "";
-    if (!msg) return res.json({ reply: "Hello Hamza! I am ready." });
-    
-    res.json({ reply: generate(msg) });
+    res.json({ reply: result.join(" ") });
 });
 
-// 2. Static Files Second
+// --- STATIC FRONTEND (SECOND) ---
 app.use(express.static(path.join(__dirname, "public")));
 
-// 3. Root Fallback
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"), (err) => {
-        if (err) res.send("AI Online. Add your 3D files to the public folder!");
-    });
+// --- FALLBACK ---
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 module.exports = app;
