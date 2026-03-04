@@ -12,7 +12,7 @@ app.use(express.json());
 // This lets Vercel show your HTML/JS files inside the "public" folder
 app.use(express.static(path.join(process.cwd(), "public")));
 
-const dataFilePath = path.join(process.cwd(), "hamza.json");
+const dataFilePath = path.join(__dirname, "hamza.json");
 const tokenizer = new natural.WordTokenizer();
 
 // Global variables to store trained data in memory
@@ -107,6 +107,10 @@ app.get("/chat", (req, res) => {
         status: "Generative"
     });
 });
+
+
+// FIX 3: Serve the frontend AFTER the API routes
+app.use(express.static(path.join(__dirname, "public")));
 
 // For Vercel, we must export the app
 module.exports = app;
