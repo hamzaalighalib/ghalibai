@@ -8,115 +8,107 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. SERVING THE FRONTEND (The 3D Space)
-// This lets Vercel show your HTML/JS files inside the "public" folder
-app.use(express.static(path.join(process.cwd(), "public")));
-
+// 1. DATA PATHS (Vercel uses __dirname to find files in your folder)
 const dataFilePath = path.join(__dirname, "hamza.json");
 const tokenizer = new natural.WordTokenizer();
 
-// Global variables to store trained data in memory
 let generativeBrain = {};
 let isTrained = false;
 
-// --- SMART BRAIN TRAINING ---
-function trainGenerativeModel() {
-    if (isTrained) return; // Don't retrain if already done
-
+// 2. THE BRAIN TRAINER (With Error Protection)
+function trainBrain() {
+    if (isTrained) return; 
     try {
-        if (fs.existsSync(dataFilePath)) {
-            const fileData = fs.readFileSync(dataFilePath, "utf8");
-            const qaData = JSON.parse(fileData).data || [];
-            
-            generativeBrain = {}; 
-            qaData.forEach(item => {
-                // Learn from both Questions and Answers to understand human speech
-                const text = (item.question + " " + item.answers.join(" ")).toLowerCase();
-                const tokens = tokenizer.tokenize(text);
-                
-                if (tokens) {
-                    for (let i = 0; i < tokens.length - 1; i++) {
-                        const curr = tokens[i];
-                        const next = tokens[i + 1];
-                        if (!generativeBrain[curr]) generativeBrain[curr] = [];
-                        // Store every occurrence so common words have higher probability
-                        generativeBrain[curr].push(next);
-                    }
-                }
-            });
-            isTrained = true;
-            console.log("🧠 Brain fully trained with " + Object.keys(generativeBrain).length + " word patterns.");
+        if (!fs.existsSync(dataFilePath)) {
+            console.log("⚠️ hamza.json not found, using empty brain.");
+            return;
         }
-    } catch (error) {
-        console.error("❌ Training Error:", error.message);
+
+        const rawData = fs.readFileSync(dataFilePath, "utf8");
+        const jsonData = JSON.parse(rawData);
+        const qaData = jsonData.data || [];
+
+        generativeBrain = {}; 
+        qaData.forEach(item => {
+            // Combine Question + Answers into one long sentence for learning
+            const fullText = (item.question + " " + item.answers.join(" ")).toLowerCase();
+            const tokens = tokenizer.tokenize(fullText);
+            
+            if (tokens && tokens.length > 1) {
+                for (let i = 0; i < tokens.length - 1; i++) {
+                    const current = tokens[i];
+                    const next = tokens[i + 1];
+                    if (!generativeBrain[current]) generativeBrain[current] = [];
+                    generativeBrain[current].push(next);
+                }
+            }
+        });
+
+        isTrained = true;
+        console.log("✅ Brain Trained Successfully!");
+    } catch (err) {
+        console.error("❌ Training Failed:", err.message);
     }
 }
 
-// --- HUMAN-LIKE GENERATION ---
-function generateHumanResponse(seedWord) {
-    let current = seedWord.toLowerCase();
+// 3. THE GENERATOR (Human-Like Randomness)
+function generateResponse(input) {
+    const tokens = tokenizer.tokenize(input.toLowerCase());
+    if (!tokens || tokens.length === 0) return "I am listening...";
+
+    let current = tokens[tokens.length - 1]; // Start with the last word user typed
     let result = [current];
-    let limit = 15; // Max sentence length
+    let maxLength = 12;
 
-    for (let i = 0; i < limit; i++) {
-        const possibilities = generativeBrain[current];
-        if (!possibilities || possibilities.length === 0) break;
+    for (let i = 0; i < maxLength; i++) {
+        const nextWords = generativeBrain[current];
+        if (!nextWords || nextWords.length === 0) break;
 
-        // "HUMAN" LOGIC: Instead of picking the BEST word, we pick a RANDOM likely word
-        // This makes the AI less like a robot and more like a person
-        const randomIndex = Math.floor(Math.random() * possibilities.length);
-        const nextWord = possibilities[randomIndex];
+        // Pick a RANDOM word from the list to make it feel human
+        const randomIndex = Math.floor(Math.random() * nextWords.length);
+        const chosenWord = nextWords[randomIndex];
 
-        result.push(nextWord);
-        current = nextWord;
+        result.push(chosenWord);
+        current = chosenWord;
 
-        // Stop if we hit a natural end (like a period or common ending word)
-        if (["thanks", "bye", "end"].includes(current)) break;
+        if (result.length > maxLength) break;
     }
-    
-    // Clean up: Capitalize first letter
-    let sentence = result.join(" ");
-    return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+
+    // Capitalize and return
+    let finalOutput = result.join(" ");
+    return finalOutput.charAt(0).toUpperCase() + finalOutput.slice(1);
 }
 
-// --- API ROUTES ---
+// 4. THE ROUTES (Order is very important!)
 
-// Route for your 3D Frontend to talk to the AI
+// A. The Chat API
 app.get("/chat", (req, res) => {
-    trainGenerativeModel(); // Ensures brain is ready
-
-    const userMsg = req.query.message;
-    if (!userMsg) return res.send({ reply: "I'm ready! Send me a message, Hamza." });
-
-    const tokens = tokenizer.tokenize(userMsg.toLowerCase());
-    if (!tokens || tokens.length === 0) {
-        return res.send({ reply: "That's interesting! Can you tell me more?" });
+    trainBrain(); // Ensure brain is loaded
+    const userMessage = req.query.message || "";
+    
+    if (userMessage.length < 1) {
+        return res.json({ reply: "Ask me something, Hamza!" });
     }
 
-    // Use the last word to start the generation
-    const lastWord = tokens[tokens.length - 1];
-    let response = generateHumanResponse(lastWord);
+    const aiReply = generateResponse(userMessage);
+    res.json({ reply: aiReply });
+});
 
-    // If it's a one-word answer, it means the AI got stuck. Give it a push.
-    if (response.split(" ").length === 1) {
-        response = `Tell me more about ${response}. I want to learn!`;
-    }
+// B. Static Files (Your 3D World)
+// This serves index.html from your 'public' folder
+app.use(express.static(path.join(__dirname, "public")));
 
-    res.json({
-        reply: response,
-        status: "Generative"
+// C. Root Route Fallback
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"), (err) => {
+        if (err) res.status(200).send("AI Server is Online. Upload your HTML to 'public' folder!");
     });
 });
 
-
-// FIX 3: Serve the frontend AFTER the API routes
-app.use(express.static(path.join(__dirname, "public")));
-
-// For Vercel, we must export the app
+// 5. EXPORT FOR VERCEL
 module.exports = app;
 
-// Local testing
+// Local Development Support
 if (process.env.NODE_ENV !== 'production') {
-    const PORT = 3000;
-    app.listen(PORT, () => console.log(`🚀 AI Server: http://localhost:${PORT}`));
+    app.listen(3000, () => console.log("🚀 Running at http://localhost:3000"));
 }
