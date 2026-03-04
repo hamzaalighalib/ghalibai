@@ -8,113 +8,111 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Data Loading - Using absolute path for Vercel compatibility
+// 1. SERVING THE FRONTEND (The 3D Space)
+// This lets Vercel show your HTML/JS files inside the "public" folder
+app.use(express.static(path.join(process.cwd(), "public")));
+
 const dataFilePath = path.join(process.cwd(), "hamza.json");
-let qaData = [];
-let generativeBrain = {};
-
-try {
-    if (fs.existsSync(dataFilePath)) {
-        const fileData = fs.readFileSync(dataFilePath, "utf8");
-        const jsonData = JSON.parse(fileData);
-        qaData = jsonData.data || [];
-        console.log("✅ hamza.json loaded.");
-    }
-} catch (error) {
-    console.error("❌ JSON Error:", error.message);
-}
-
-// 2. NLP Tools
 const tokenizer = new natural.WordTokenizer();
 
-// Simulated word embeddings
-const wordEmbeddings = {
-    'hello': [0.1, 0.2, 0.3],
-    'hi': [0.12, 0.22, 0.28],
-    'how': [0.3, 0.1, 0.2],
-    'are': [0.2, 0.3, 0.1],
-    'you': [0.25, 0.35, 0.15]
-};
+// Global variables to store trained data in memory
+let generativeBrain = {};
+let isTrained = false;
 
-// --- GENERATIVE TRAINING ---
+// --- SMART BRAIN TRAINING ---
 function trainGenerativeModel() {
-    generativeBrain = {}; // Reset brain before training
-    qaData.forEach(item => {
-        const fullText = (item.question + " " + item.answers.join(" ")).toLowerCase();
-        const tokens = tokenizer.tokenize(fullText);
-        if (!tokens) return;
+    if (isTrained) return; // Don't retrain if already done
 
-        for (let i = 0; i < tokens.length - 1; i++) {
-            const current = tokens[i];
-            const next = tokens[i + 1];
-            if (!generativeBrain[current]) generativeBrain[current] = {};
-            generativeBrain[current][next] = (generativeBrain[current][next] || 0) + 1;
+    try {
+        if (fs.existsSync(dataFilePath)) {
+            const fileData = fs.readFileSync(dataFilePath, "utf8");
+            const qaData = JSON.parse(fileData).data || [];
+            
+            generativeBrain = {}; 
+            qaData.forEach(item => {
+                // Learn from both Questions and Answers to understand human speech
+                const text = (item.question + " " + item.answers.join(" ")).toLowerCase();
+                const tokens = tokenizer.tokenize(text);
+                
+                if (tokens) {
+                    for (let i = 0; i < tokens.length - 1; i++) {
+                        const curr = tokens[i];
+                        const next = tokens[i + 1];
+                        if (!generativeBrain[curr]) generativeBrain[curr] = [];
+                        // Store every occurrence so common words have higher probability
+                        generativeBrain[curr].push(next);
+                    }
+                }
+            });
+            isTrained = true;
+            console.log("🧠 Brain fully trained with " + Object.keys(generativeBrain).length + " word patterns.");
         }
-    });
+    } catch (error) {
+        console.error("❌ Training Error:", error.message);
+    }
 }
 
-// --- GENERATION ENGINE ---
-function generateResponse(seedWord) {
-    if (!seedWord) return "I am listening! What's on your mind?";
-    
+// --- HUMAN-LIKE GENERATION ---
+function generateHumanResponse(seedWord) {
     let current = seedWord.toLowerCase();
     let result = [current];
-    let limit = 12; 
+    let limit = 15; // Max sentence length
 
     for (let i = 0; i < limit; i++) {
         const possibilities = generativeBrain[current];
-        if (!possibilities) break;
+        if (!possibilities || possibilities.length === 0) break;
 
-        // Find the most likely next word
-        const next = Object.keys(possibilities).reduce((a, b) => 
-            possibilities[a] > possibilities[b] ? a : b
-        );
-        
-        result.push(next);
-        current = next;
-        if (result.length > limit) break;
+        // "HUMAN" LOGIC: Instead of picking the BEST word, we pick a RANDOM likely word
+        // This makes the AI less like a robot and more like a person
+        const randomIndex = Math.floor(Math.random() * possibilities.length);
+        const nextWord = possibilities[randomIndex];
+
+        result.push(nextWord);
+        current = nextWord;
+
+        // Stop if we hit a natural end (like a period or common ending word)
+        if (["thanks", "bye", "end"].includes(current)) break;
     }
-    return result.join(" ");
+    
+    // Clean up: Capitalize first letter
+    let sentence = result.join(" ");
+    return sentence.charAt(0).toUpperCase() + sentence.slice(1);
 }
 
 // --- API ROUTES ---
-app.get("/", (req, res) => {
-    res.send("AI Server is Online, Hamza!");
-});
 
+// Route for your 3D Frontend to talk to the AI
 app.get("/chat", (req, res) => {
-    // Train on every request or once - for Serverless, we ensure it's trained
-    trainGenerativeModel();
+    trainGenerativeModel(); // Ensures brain is ready
 
     const userMsg = req.query.message;
-    if (!userMsg) return res.status(400).send({ error: "No message provided" });
+    if (!userMsg) return res.send({ reply: "I'm ready! Send me a message, Hamza." });
 
     const tokens = tokenizer.tokenize(userMsg.toLowerCase());
-    
-    // Safety check if no tokens are found
     if (!tokens || tokens.length === 0) {
-        return res.send({ reply: "I didn't quite catch that. Can you say it differently?" });
+        return res.send({ reply: "That's interesting! Can you tell me more?" });
     }
 
+    // Use the last word to start the generation
     const lastWord = tokens[tokens.length - 1];
-    let response = generateResponse(lastWord);
+    let response = generateHumanResponse(lastWord);
 
-    // If the brain couldn't find a path, give a friendly fallback
-    if (response === lastWord) {
-        response = "That's interesting! Tell me more about '" + lastWord + "'.";
+    // If it's a one-word answer, it means the AI got stuck. Give it a push.
+    if (response.split(" ").length === 1) {
+        response = `Tell me more about ${response}. I want to learn!`;
     }
 
-    res.send({
+    res.json({
         reply: response,
-        seed: lastWord
+        status: "Generative"
     });
 });
 
-// IMPORTANT FOR VERCEL: Export the app
+// For Vercel, we must export the app
 module.exports = app;
 
-// Only listen if running locally
+// Local testing
 if (process.env.NODE_ENV !== 'production') {
     const PORT = 3000;
-    app.listen(PORT, () => console.log(`🚀 Local Server: http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`🚀 AI Server: http://localhost:${PORT}`));
 }
